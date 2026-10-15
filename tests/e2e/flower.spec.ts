@@ -34,7 +34,7 @@ async function pixelStats(page: Page) {
 for (const backend of ['webgl', 'auto'] as const) {
   test.describe(`backend=${backend}`, () => {
     test('fully grown flower lights up the frame without black pixels or errors', async ({ page }) => {
-      const errors = await open(page, `?backend=${backend}&growth=1&freeze=1`);
+      const errors = await open(page, `?scene=flower&backend=${backend}&growth=1&freeze=1`);
       await page.waitForTimeout(500);
       const { lit, black } = await pixelStats(page);
       expect(lit).toBeGreaterThan(GROWN_LIT_MIN);
@@ -43,7 +43,7 @@ for (const backend of ['webgl', 'auto'] as const) {
     });
 
     test('growth 0 shows only the glowing seed', async ({ page }) => {
-      await open(page, `?backend=${backend}&growth=0&freeze=1`);
+      await open(page, `?scene=flower&backend=${backend}&growth=0&freeze=1`);
       await page.waitForTimeout(500);
       const { lit, black } = await pixelStats(page);
       expect(lit).toBeGreaterThan(SEED_ONLY_LIT_MIN);
@@ -52,7 +52,7 @@ for (const backend of ['webgl', 'auto'] as const) {
     });
 
     test('scrubbing 1 -> 0 -> 1 is reversible and error-free', async ({ page }) => {
-      const errors = await open(page, `?backend=${backend}&growth=1&freeze=1`);
+      const errors = await open(page, `?scene=flower&backend=${backend}&growth=1&freeze=1`);
       await page.waitForTimeout(300);
       const full = await pixelStats(page);
       for (const g of [0.7, 0.3, 0, 0.5, 1]) {
@@ -70,7 +70,7 @@ for (const backend of ['webgl', 'auto'] as const) {
 test('resize and high DPR keep DPR capped at 2 without errors', async ({ browser }) => {
   const ctx = await browser.newContext({ deviceScaleFactor: 3, viewport: { width: 1280, height: 800 } });
   const page = await ctx.newPage();
-  const errors = await open(page, '?backend=webgl&growth=1&freeze=1');
+  const errors = await open(page, '?scene=flower&backend=webgl&growth=1&freeze=1');
   await page.setViewportSize({ width: 800, height: 600 });
   await page.waitForTimeout(200);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -81,6 +81,6 @@ test('resize and high DPR keep DPR capped at 2 without errors', async ({ browser
 });
 
 test('reports which backend it used', async ({ page }) => {
-  await open(page, '?backend=webgl&growth=1&freeze=1');
+  await open(page, '?scene=flower&backend=webgl&growth=1&freeze=1');
   expect(await page.evaluate(() => window.__quarrymill!.backend)).toBe('webgl2');
 });
