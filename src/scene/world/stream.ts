@@ -20,7 +20,8 @@ function ribbon(halfWidth: number): THREE.BufferGeometry {
     pos.set([x + px * halfWidth, WATER_Y, z + pz * halfWidth, x - px * halfWidth, WATER_Y, z - pz * halfWidth], i * 6);
     if (i < n - 1) {
       const a = i * 2;
-      index.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+      // Ordem anti-horária vista de cima: a normal da face aponta para +y (o contrário era descartado).
+      index.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
     }
   }
   const g = new THREE.BufferGeometry();
@@ -41,7 +42,8 @@ function rainRings(scale: number, speed: number) {
   const center = vec2(h2.sub(0.5), h1.sub(0.5)).mul(0.4);
   const r = length(local.sub(center));
   const ring = smoothstep(0.0, 0.05, abs(r.sub(t.mul(0.4)))).oneMinus().mul(t.oneMinus());
-  return ring.mul(step(h2, uRain));
+  // Só uma fração das células acende, para os anéis não virarem padrão.
+  return ring.mul(step(h2, uRain.mul(0.35)));
 }
 
 export function createStream() {
@@ -50,7 +52,7 @@ export function createStream() {
   const q = positionWorld.xz.mul(1.6);
   const nx = mx_noise_float(vec3(q.x.add(flowT), q.y, flowT));
   const nz = mx_noise_float(vec3(q.x, q.y.sub(flowT), flowT.add(7)));
-  const rings = rainRings(3.2, 0.9).add(rainRings(5.1, 1.3).mul(0.7));
+  const rings = rainRings(3.2, 0.9);
   m.normalNode = transformNormalToView(normalize(vec3(nx.mul(0.22), float(1), nz.mul(0.22))));
   m.colorNode = color('#04070d');
 
@@ -58,9 +60,10 @@ export function createStream() {
   const V = normalize(cameraPosition.sub(positionWorld));
   const fres = pow(max(float(1).sub(max(dot(V, vec3(0, 1, 0)), 0)), 0), float(2.5));
   const sky = mix(color('#34406a'), color('#a6acd6'), uFlash);
-  m.emissiveNode = sky.mul(fres.mul(0.8).add(0.08))
-    .add(color('#8a96c4').mul(rings.mul(0.6)))
-    .add(color('#6a7090').mul(smoothstep(0.35, 0.6, nx).mul(0.04)));
+  // Base um pouco acesa e brilhos móveis: o riacho precisa se ler como uma linha clara no plano fixo.
+  m.emissiveNode = sky.mul(fres.mul(0.55).add(0.05))
+    .add(color('#8a96c4').mul(rings.mul(0.25)))
+    .add(color('#8a90c0').mul(smoothstep(0.3, 0.6, nx).mul(0.08)));
   const mesh = new THREE.Mesh(ribbon(STREAM_HALF_WIDTH * 1.35), m);
   return mesh;
 }
