@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import {
-  color, float, vec3, uv, length, smoothstep, sin, instanceIndex, hash, time, mx_noise_vec3, mix,
+  color, float, vec3, uv, length, smoothstep, sin, instanceIndex, hash, time, mx_noise_vec3, mix, cameraPosition,
 } from 'three/tsl';
 import { fireflyCount } from './layout';
 
@@ -15,12 +15,15 @@ export function createFireflies() {
   const rad = float(1.2).add(h2.mul(h2).mul(9.8));
   const base = vec3(ang.cos().mul(rad), float(0.15).add(h3.mul(2.25)), ang.sin().mul(rad));
   const drift = mx_noise_vec3(vec3(h1.mul(40), h2.mul(40), time.mul(0.12).add(h4.mul(10)))).mul(0.9);
-  m.positionNode = base.add(drift);
+  const pos = base.add(drift);
+  m.positionNode = pos;
+  // Um vaga-lume rente à lente vira um borrão enorme: some antes de chegar perto da câmera.
+  const nearCam = smoothstep(1.2, 2.6, length(pos.sub(cameraPosition)));
   const blink = smoothstep(0.1, 0.9, sin(time.mul(float(0.8).add(h4.mul(1.4))).add(h1.mul(40))).mul(0.5).add(0.5));
   const glow = smoothstep(0.0, 0.5, length(uv().sub(0.5))).oneMinus();
   const tint = mix(color('#ffb3d9'), color('#ffd59a'), h3);
-  m.colorNode = tint.mul(glow.mul(glow)).mul(blink.mul(2.2).add(0.15));
-  m.opacityNode = glow;
+  m.colorNode = tint.mul(glow.mul(glow)).mul(blink.mul(2.2).add(0.15)).mul(nearCam);
+  m.opacityNode = glow.mul(nearCam);
   m.scaleNode = float(0.07).add(h2.mul(0.05));
   const sprite = new THREE.Sprite(m);
   sprite.count = count;
