@@ -8,7 +8,8 @@ import { growthPositionNode, growthNormalNode, uGrowth } from './growthNode';
 
 export const uLightPos = uniform(new THREE.Vector3(0.3, 1.6, -1.2));
 export const uFlash = uniform(0); // relâmpago: 0 a 1
-export const uPulse = uniform(0); // graves da música, fase 4; aqui fica em 0
+/** Pulso da flor: 0 em repouso; a flor do nome leva a 1 uma vez (veias e miolo acendem). */
+export const uPulse = uniform(0);
 
 const rgb = (c: [number, number, number]) => color(new THREE.Color(c[0], c[1], c[2]));
 
@@ -39,18 +40,18 @@ function petalMaterial(p: FlowerPalette) {
   // A pétala é em parte auto-iluminada (rosa chiclete sob qualquer luz); veias e borda em rosa neon,
   // fortes o bastante para passar do limiar do bloom e brilhar de leve em repouso (bioluminescência).
   m.emissiveNode = albedo.mul(0.5)
-    .add(rgb(p.vein).mul(veins.mul(float(2.2).add(uPulse.mul(0.6)))))
+    .add(rgb(p.vein).mul(veins.mul(float(2.2).add(uPulse.mul(2.4)))))
     .add(rgb(p.petalTip).mul(back))
     .add(rgb(p.vein).mul(rim.mul(2.8)));
   return m;
 }
 
-function simpleMaterial(c: [number, number, number], glow: [number, number, number], glowStrength: number, side: THREE.Side) {
+function simpleMaterial(c: [number, number, number], glow: [number, number, number], glowStrength: number, side: THREE.Side, pulse = 0) {
   const m = new THREE.MeshStandardNodeMaterial({ side, roughness: 0.7, metalness: 0 });
   m.positionNode = growthPositionNode;
   m.normalNode = growthNormalNode;
   m.colorNode = rgb(c);
-  m.emissiveNode = rgb(glow).mul(glowStrength);
+  m.emissiveNode = rgb(glow).mul(uPulse.mul(pulse).add(glowStrength));
   return m;
 }
 
@@ -66,7 +67,7 @@ export function createFlowerMaterials(p: FlowerPalette) {
     // Caule e folhas levemente auto-iluminados na própria cor, para não sumirem no fundo escuro.
     stem: simpleMaterial(p.stem, p.stem, 0.35, THREE.FrontSide),
     leaf: simpleMaterial(p.leaf, p.leaf, 0.35, THREE.DoubleSide),
-    stamen: simpleMaterial(p.core, p.core, 2.5, THREE.FrontSide),
+    stamen: simpleMaterial(p.core, p.core, 2.5, THREE.FrontSide, 2.5),
     seed,
   };
 }
