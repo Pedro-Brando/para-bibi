@@ -4,7 +4,9 @@ Pedido do dono do projeto depois de ver o site publicado: (1) a página ainda en
 
 Regras globais: as mesmas dos blocos anteriores (branch nova `feat/polish` a partir de `main`; sem dependências novas; Three.js 0.186.1; o nome completo dela nunca aparece; nomes públicos "Ana Beatriz" e "Bibi Bilota"; texto em português; nenhum U+2014; commits pequenos com `git commit -F -` terminando em `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; não usar nem parar a porta 5180; não publicar, o coordenador publica). Continua sendo um site, não um jogo.
 
-## P1. Navegação por passos (substitui o scroll livre)
+## P1. Navegação por passos (setas sobre o scroll livre)
+
+Atualização do dono do projeto: com a página mais leve, o scroll livre ficou bom e fica. As setas e o teclado pulam de passo em passo animando o scroll; a roda do mouse e o trackpad continuam livres, sem trava. O texto abaixo vale, exceto onde fala em substituir o scroll.
 
 - A experiência vira uma sequência de passos com posições fixas na linha do tempo (`p` de `src/timeline/timeline.ts`). Passos sugeridos: semente; a flor cresce; a flor do nome (P3); subida; tempestade (atrás da névoa); o céu abre; Órion e a frase das cidades; um passo por verso do poema (a linha em branco é um passo só de céu); as noites; o final.
 - Ir de um passo ao seguinte anima `p` com easing (duração proporcional à distância, por exemplo 1,2 a 4 s; o crescimento da flor pode levar mais, por volta de 6 s, para ser apreciado). Durante uma transição, novos comandos são enfileirados no máximo um à frente; nunca se pula um passo.
