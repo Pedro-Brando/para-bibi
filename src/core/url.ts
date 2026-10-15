@@ -6,6 +6,8 @@ export interface AppOptions {
   seed: 'name' | string;
   /** 'full': Quarrymill inteira; 'flower': só a flor no fundo escuro, como na fase 1. */
   scene: 'full' | 'flower';
+  /** 'sky': câmera em Órion com o céu real limpo e as linhas desenhadas (capturas). */
+  view: 'default' | 'sky';
 }
 
 export function parseOptions(search: string): AppOptions {
@@ -19,5 +21,6 @@ export function parseOptions(search: string): AppOptions {
     dev: q.get('dev') === '1',
     seed: q.get('seed') ?? 'name',
     scene: q.get('scene') === 'flower' ? 'flower' : 'full',
+    view: q.get('view') === 'sky' ? 'sky' : 'default',
   };
 }

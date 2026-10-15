@@ -14,12 +14,17 @@ import { eorzeaTime, formatEt, FIRST_DATE_UNIX } from './eorzea/time';
 import { weatherChance, southShroudWeather, weatherLabelPt } from './eorzea/weather';
 import type { World } from './scene/world';
 
+type SkyUniform = 'uCoverage' | 'uWorldBlend' | 'uOrion' | 'uCityBlend';
+export type LookTarget = 'orion' | 'moon' | 'default';
+
 declare global {
   interface Window {
     __quarrymill?: {
       backend: 'webgpu' | 'webgl2'; ready: boolean; setGrowth(g: number): void; dpr(): number;
       /** Só na cena completa: dispara um raio agora (dev e capturas). */
       strike?: () => void;
+      /** Só na cena completa: conduz os céus (bloco C fará isso pelo scroll) e aponta a câmera. */
+      sky?: { set(u: Partial<Record<SkyUniform, number>>): void; look(what: LookTarget): void };
     };
   }
 }
@@ -54,7 +59,7 @@ async function main() {
     ]);
     audio.enableAudioOnFirstGesture();
     audio.onAudioReady((a) => { rainSound = createRainSound(a); });
-    world = createWorld(stage.scene, {
+    world = await createWorld(stage.scene, {
       camera: stage.camera,
       target: stage.controls.target,
       onStrike: (distance) => {
@@ -72,9 +77,28 @@ async function main() {
     flashT: 0,
     flash: () => { state.flashT = 1; },
   };
+  // Olhar para o céu: só gira a câmera (a posição fica), apontando o alvo do OrbitControls para a direção.
+  const homeTarget = stage.controls.target.clone();
+  const look = (what: LookTarget) => {
+    if (!world) return;
+    // Olhando para cima, as copas das duas camadas mais perto escondem a cabeça de Órion: elas saem do quadro.
+    world.setNearSilhouettes(what === 'default');
+    if (what === 'default') { stage.controls.target.copy(homeTarget); return; }
+    const dir = what === 'orion' ? world.sky.orionDirection() : world.sky.moonDirection();
+    stage.controls.target.copy(stage.camera.position).addScaledVector(dir, 5);
+  };
+  const setSky = (u: Partial<Record<SkyUniform, number>>) => {
+    if (!world) return;
+    for (const [k, v] of Object.entries(u) as [SkyUniform, number][]) world.sky[k].value = Math.min(1, Math.max(0, v));
+    world.sky.update(0, 0); // a cidade nova já vale para um look() logo em seguida
+  };
+  if (world && opts.view === 'sky') {
+    setSky({ uCoverage: 0, uWorldBlend: 1, uOrion: 1 });
+    look('orion');
+  }
   if (opts.dev) {
     const { createDevGui } = await import('./dev/gui');
-    createDevGui(state, params, world);
+    createDevGui(state, params, world, look);
   }
   window.addEventListener('keydown', (e) => { if (e.key === 'l' || e.key === 'L') state.flash(); });
 
@@ -84,6 +108,7 @@ async function main() {
     setGrowth: (g: number) => { state.growth = Math.min(1, Math.max(0, g)); state.playing = false; },
     dpr: stage.dpr,
     strike: world ? () => world!.strike() : undefined,
+    sky: world ? { set: setSky, look } : undefined,
   };
 
   const clock = createClock();

@@ -1,0 +1,15 @@
+Quarrymill: créditos de terceiros
+
+Catálogo de estrelas (public/stars.bin, public/stars-meta.json)
+  Derivado de d3-celestial, data/stars.6.json
+  https://github.com/ofrohn/d3-celestial
+  Copyright (c) 2015, Olaf Frohn. Licença BSD-3-Clause.
+  Redistribuição permitida com este aviso de copyright, a lista de condições
+  e o aviso de isenção de responsabilidade da licença BSD-3-Clause.
+
+astronomy-engine 2.1.19 (posições da Lua, dos planetas e rotação do céu)
+  https://github.com/cosinekitty/astronomy
+  Copyright (c) 2019-2023 Don Cross. Licença MIT.
+
+Fonte do poema
+  A definir no bloco C.
