@@ -61,12 +61,12 @@ describe('world layout', () => {
     expect(n).toBe(fireflyCount());
     expect(n).toBeGreaterThanOrEqual(FIREFLY_MIN);
     expect(n).toBeLessThanOrEqual(FIREFLY_MAX);
-    expect(FIREFLY_MIN).toBe(40);
-    expect(FIREFLY_MAX).toBe(90);
+    expect(FIREFLY_MIN).toBe(24);
+    expect(FIREFLY_MAX).toBe(36);
   });
   it('silhouette layers: deterministic trees inside each layer, tall trunks up front, center clear', () => {
     expect(LAYERS.length).toBeGreaterThanOrEqual(4);
-    expect(LAYERS.length).toBeLessThanOrEqual(6);
+    expect(LAYERS.length).toBeLessThanOrEqual(4);
     let total = 0;
     LAYERS.forEach((spec, i) => {
       const trees = layerTrees(i);

@@ -96,3 +96,40 @@ html.site canvas { position: fixed; inset: 0; }
 .small-screen .line .en { font-style: italic; font-size: 1.35rem; }
 .small-screen .line .pt { color: var(--pink); font-size: 1rem; margin-top: 0.15rem; }
 .small-screen .gap { height: 1.4rem; }
+
+/* Setinhas dos passos: centro de baixo, mesma tipografia e cor dos controles do canto. */
+.stepper {
+  position: fixed; left: 50%; bottom: 0.6rem; transform: translateX(-50%); z-index: 10;
+  display: flex; flex-direction: column; align-items: center; gap: 0.1rem; color: var(--pink-soft);
+  opacity: 0; transition: opacity 1.4s ease; pointer-events: none;
+}
+.stepper.on { opacity: 1; pointer-events: auto; }
+.stepper button {
+  appearance: none; border: 0; background: none; color: inherit; cursor: pointer; padding: 0.3rem 0.9rem;
+  line-height: 0; transition: opacity 0.4s ease;
+}
+.stepper .step-prev { opacity: 0.28; }
+.stepper .step-next { opacity: 0.7; }
+.stepper button:hover, .stepper button:focus-visible { opacity: 1; outline: none; }
+.stepper button.off { opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0s linear 0.4s; }
+
+.progress {
+  position: fixed; right: 1.1rem; top: 50%; height: 22vh; width: 1px; transform: translateY(-50%);
+  background: rgba(255, 200, 225, 0.12); opacity: 0; transition: opacity 1.4s ease; pointer-events: none;
+}
+.progress.on { opacity: 1; }
+.progress .fill { width: 100%; height: 100%; background: var(--pink-soft); opacity: 0.55; transform-origin: top; transform: scaleY(0); }
+
+/* A flor do nome: os textos em cima, a cena escurece em volta da flor. */
+.name-flower { left: 0; right: 0; top: 9vh; text-align: center; }
+.name-flower .caption { position: absolute; left: 0; right: 0; top: 0; font-style: italic; font-size: clamp(1.7rem, 2.6vw, 2.5rem); line-height: 1.15; text-shadow: 0 0 18px rgba(7, 6, 13, 0.9); }
+.name-flower .morph { position: absolute; left: 0; right: 0; top: 3.6rem; }
+.name-flower .morph > div { position: absolute; left: 0; right: 0; top: 0; }
+.name-flower .name { font-style: italic; font-size: clamp(1.9rem, 3vw, 2.8rem); color: var(--pink-soft); }
+.name-flower .name span { display: inline-block; white-space: pre; }
+.name-flower .hex { top: 0.5rem !important; font-size: clamp(1.05rem, 1.5vw, 1.35rem); color: var(--pink); letter-spacing: 0.14em; font-variant-numeric: tabular-nums; }
+.name-flower .facts { top: 0.5rem !important; font-size: clamp(1.05rem, 1.5vw, 1.35rem); color: var(--pink); letter-spacing: 0.02em; text-shadow: 0 0 14px rgba(7, 6, 13, 0.9); }
+.vignette {
+  inset: 0; opacity: 0;
+  background: radial-gradient(ellipse 32% 40% at 50% 54%, rgba(7, 6, 13, 0) 0%, rgba(7, 6, 13, 0.25) 55%, rgba(7, 6, 13, 0.82) 100%);
+}

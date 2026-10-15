@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { STEPS } from '../../src/timeline/steps';
 
 const BASE = 'http://localhost:5179/';
 
@@ -20,12 +21,28 @@ async function scrollTo(page: Page, to: number) {
   await page.waitForFunction((t) => Math.abs(window.__quarrymill!.progress!() - t) < 0.002, to, { timeout: 120_000 });
 }
 
-test('entry screen, click to enter, scroll to the end reaches explore mode without errors', async ({ page }) => {
-  test.setTimeout(300_000);
+/** Espera a transição das setas terminar exatamente no passo `i`. */
+async function settledAt(page: Page, i: number) {
+  await page.waitForFunction((t) => !window.__quarrymill!.navBusy!() && Math.abs(window.__quarrymill!.progress!() - t) < 1e-3, STEPS[i]!.p, { timeout: 120_000 });
+}
+
+test('entry screen, then the arrow (click) and ArrowDown walk every step to explore mode without errors', async ({ page }) => {
+  test.setTimeout(600_000);
   const errors: string[] = [];
   await enter(page, errors);
   await expect(page.locator('.entry')).toHaveCount(0, { timeout: 5000 });
-  await scrollTo(page, 1);
+  const half = Math.floor(STEPS.length / 2);
+  for (let i = 1; i < STEPS.length; i++) {
+    if (i <= half) await page.getByRole('button', { name: 'seguir' }).click();
+    else await page.keyboard.press('ArrowDown');
+    await settledAt(page, i);
+  }
+  // A seta de seguir some no último passo; a de voltar volta um passo só.
+  await expect(page.getByRole('button', { name: 'seguir' })).toBeHidden();
+  await page.getByRole('button', { name: 'voltar' }).click();
+  await settledAt(page, STEPS.length - 2);
+  await page.keyboard.press('ArrowDown');
+  await settledAt(page, STEPS.length - 1);
   await expect(page.getByRole('button', { name: 'recomeçar' })).toBeVisible();
   await expect(page.locator('.place-label')).toHaveText('Ana Beatriz · São Paulo · 3 de outubro de 2026 · 3:53');
   expect(errors).toEqual([]);
@@ -52,7 +69,8 @@ test('@gallery @site captures', async ({ page }) => {
   };
   await at('02-seed', 0.05);
   await at('03-flower-growing', 0.26);
-  await at('04-flower-grown', 0.36);
+  await at('04-flower-grown', STEPS.find((s) => s.id === 'flower')!.p);
+  for (const k of [1, 2, 3, 4]) await at(`04${'abcd'[k - 1]}-name-${k}`, STEPS.find((s) => s.id === `name-${k}`)!.p, 2500);
   await at('05-ascent', 0.45);
   await at('05b-veil', 0.515);
   await at('06-storm', 0.585);

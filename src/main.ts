@@ -26,6 +26,8 @@ declare global {
       /** Só no site: progresso suavizado do scroll e um salto direto (testes e capturas). */
       progress?: () => number;
       jump?: (p: number) => void;
+      /** Só no site: uma transição das setas em andamento. */
+      navBusy?: () => boolean;
       entered?: boolean;
     };
   }

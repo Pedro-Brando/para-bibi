@@ -6,7 +6,8 @@ import { uRain } from './uniforms';
 import { uFlash } from '../flower/materials';
 
 // Calibrado com o dono: a tempestade (uRain = 1) tem a cara que uRain = 0,1 tinha com 7000 gotas.
-const DROPS = 800;
+// 400 gotas (PC fraco), um pouco mais opacas para a tempestade não perder corpo.
+const DROPS = 400;
 const BOX = 26; // lado da caixa de chuva em volta da câmera
 const HEIGHT = 18;
 const SPEED = 15;
@@ -35,7 +36,7 @@ export function createRain() {
   m.colorNode = color('#9aa6cc').mul(float(0.5).add(uFlash.mul(2.5)));
   // Gotas a menos de 2 da câmera virariam faixas enormes na tela: somem.
   const near = smoothstep(2, 5, length(head.sub(cameraPosition)));
-  m.opacityNode = along.oneMinus().mul(0.13).mul(on).mul(near);
+  m.opacityNode = along.oneMinus().mul(0.17).mul(on).mul(near);
   const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), m, DROPS);
   mesh.frustumCulled = false;
   return mesh;

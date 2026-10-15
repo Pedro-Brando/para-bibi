@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { color, mix, mx_noise_float, positionWorld, smoothstep } from 'three/tsl';
+import { color, mix, positionWorld, smoothstep } from 'three/tsl';
+import { sampleNoise } from '../noiseTexture';
 import { terrainHeight, STREAM_PATH, STREAM_HALF_WIDTH, distanceToStream } from './layout';
 import { sfc32, range } from '../../seed/prng';
 import { treeSeed } from './layout';
@@ -18,8 +19,8 @@ function terrainGeometry(size: number, segments: number, drop: number) {
 
 function groundMaterial() {
   const m = new THREE.MeshStandardNodeMaterial({ roughness: 0.95, metalness: 0 });
-  const n = mx_noise_float(positionWorld.xz.mul(0.7)).mul(0.5).add(0.5);
-  const fine = mx_noise_float(positionWorld.xz.mul(6)).mul(0.5).add(0.5);
+  const n = sampleNoise(positionWorld.xz.mul(0.7 / 4)).r;
+  const fine = sampleNoise(positionWorld.xz.mul(6 / 8)).g;
   // Musgo escuro azulado, com manchas mais verdes e terra molhada perto da água.
   const moss = mix(color('#0d1a1f'), color('#16302a'), smoothstep(0.3, 0.8, n));
   const mud = color('#120f12');
@@ -50,7 +51,7 @@ export function createGround() {
   group.add(new THREE.Mesh(terrainGeometry(40, 160, 0), groundMaterial()));
 
   const rockMat = new THREE.MeshStandardNodeMaterial({ roughness: 0.85, metalness: 0 });
-  rockMat.colorNode = mix(color('#1b1f2a'), color('#2a2d36'), mx_noise_float(positionWorld.mul(3)).mul(0.5).add(0.5));
+  rockMat.colorNode = mix(color('#1b1f2a'), color('#2a2d36'), sampleNoise(positionWorld.xz.add(positionWorld.y).mul(3 / 8)).g);
   const rng = sfc32(treeSeed(30_000));
   const rocks: THREE.BufferGeometry[] = [];
   for (let i = 0; i < 14; i++) {

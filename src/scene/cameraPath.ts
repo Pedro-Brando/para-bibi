@@ -15,6 +15,10 @@ const FLOWER_END = 0.3;
 /** Altura da câmera no fim da subida e inclinação máxima para cima: as silhuetas só deslizam de frente. */
 const ASCENT_TOP = 9;
 const ASCENT_PITCH = THREE.MathUtils.degToRad(10);
+/** Flor do nome: aproxima 12% e balança no máximo 8 graus em volta dela, num ciclo de uns 45 s. */
+const FOCUS_CLOSER = 0.12;
+const FOCUS_SWAY = THREE.MathUtils.degToRad(8);
+const FOCUS_RATE = (Math.PI * 2) / 45;
 
 /**
  * Câmera do site, sem controle livre. Flor: aproximação numa CatmullRomCurve3 a partir do enquadramento da
@@ -31,7 +35,9 @@ export function createCameraPath(framing: Framing) {
   const base = toward(0.72);
   const pitch0 = Math.asin(new THREE.Vector3().subVectors(T0, base).normalize().y);
 
-  const dir = new THREE.Vector3(), aim = new THREE.Vector3(), right = new THREE.Vector3();
+  const dir = new THREE.Vector3(), aim = new THREE.Vector3(), right = new THREE.Vector3(), off = new THREE.Vector3();
+  const Y = new THREE.Vector3(0, 1, 0);
+  const focusTarget = T0.clone(), look = new THREE.Vector3();
   const mouse = new THREE.Vector2(), smoothMouse = new THREE.Vector2();
   window.addEventListener('pointermove', (e) => {
     mouse.set((e.clientX / window.innerWidth) * 2 - 1, (e.clientY / window.innerHeight) * 2 - 1);
@@ -41,8 +47,13 @@ export function createCameraPath(framing: Framing) {
   };
 
   return {
-    /** `t` da linha do tempo; `skyView` com o véu fechado; `sky` é a direção de Órion; `parallax` (0 a 1) liga o mouse. */
-    apply(camera: THREE.PerspectiveCamera, t: number, skyView: boolean, sky: THREE.Vector3, parallax: number, dt: number) {
+    /** A cabeça da flor, para onde a câmera olha na flor do nome. */
+    setFocusTarget(v: THREE.Vector3) { focusTarget.copy(v); },
+    /**
+     * `t` da linha do tempo; `skyView` com o véu fechado; `sky` é a direção de Órion; `parallax` (0 a 1) liga o
+     * mouse. `focus` (0 a 1, a flor do nome) aproxima a câmera e gira bem devagar uns poucos graus em volta da flor.
+     */
+    apply(camera: THREE.PerspectiveCamera, t: number, skyView: boolean, sky: THREE.Vector3, parallax: number, dt: number, focus = 0, elapsed = 0) {
       smoothMouse.lerp(mouse, 1 - Math.exp(-dt * 3));
       if (skyView) {
         camera.position.copy(base).setY(ASCENT_TOP);
@@ -59,7 +70,15 @@ export function createCameraPath(framing: Framing) {
       setFov(camera, framing.fov);
       if (t <= FLOWER_END) {
         approach.getPoint(t / FLOWER_END, camera.position);
-        camera.lookAt(T0);
+        look.copy(T0);
+        if (focus > 0) {
+          // Olha para a cabeça da flor, chega mais perto dela e balança devagar em volta.
+          look.lerp(focusTarget, focus);
+          off.subVectors(camera.position, T0).multiplyScalar(1 - FOCUS_CLOSER * focus);
+          off.applyAxisAngle(Y, focus * FOCUS_SWAY * Math.sin(elapsed * FOCUS_RATE));
+          camera.position.copy(look).add(off);
+        }
+        camera.lookAt(look);
         return;
       }
       const a = (t - FLOWER_END) / (1 - FLOWER_END);

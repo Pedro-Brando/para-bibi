@@ -179,12 +179,13 @@ function wheelCanvas(): HTMLCanvasElement {
  * contorno claro voltado para o céu durante o relâmpago.
  */
 function silhouetteMaterial(tex: THREE.Texture, layerColor: string, depth01: number, heightM: number, mistM: number, mistAmount = 0.55) {
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false });
+  // Recorte por alphaTest (opaco, escreve profundidade): sem mistura na tela inteira, e as camadas da frente
+  // escondem as de trás antes do shader delas rodar (early-z), o que pesa num GPU integrado.
+  const m = new THREE.MeshBasicNodeMaterial({ transparent: false, depthWrite: true, alphaTest: 0.5 });
   m.fog = false;
   const t = uv();
   const a = texture(tex, t).a;
-  const aa = max(fwidth(a), 0.001);
-  const sil = smoothstep(float(0.5).sub(aa), float(0.5).add(aa), a);
+  const sil = a;
   // Contorno: dentro da silhueta, mas com o céu logo acima ou ao lado (luz vindo de trás).
   const img = tex.image as HTMLCanvasElement;
   const px = vec2(1.5 / img.width, 2.5 / img.height);
@@ -196,8 +197,9 @@ function silhouetteMaterial(tex: THREE.Texture, layerColor: string, depth01: num
   const yM = t.y.mul(heightM).add(LAYER_BOTTOM);
   const mist = smoothstep(-0.5, mistM, yM).oneMinus().mul(mistAmount).mul(uFogOn);
   const mistColor = mix(color(MIST_COLOR), color('#7d80b8'), uFlash.mul(0.6));
-  m.colorNode = mix(mistColor, mix(silColor, mistColor, mist), sil);
-  m.opacityNode = max(sil, mist);
+  // A faixa de névoa fica só dentro da silhueta (fora dela o recorte descarta o pixel).
+  m.colorNode = mix(silColor, mistColor, mist);
+  m.opacityNode = sil;
   return m;
 }
 
@@ -235,8 +237,8 @@ export function createSilhouettes(camera: THREE.Camera, flowerTarget: THREE.Vect
     const center = forward.clone().multiplyScalar(spec.dist);
     mesh.position.set(center.x, LAYER_BOTTOM + spec.height / 2, center.z);
     lookY(mesh);
-    // Mais longe primeiro (11 a 15); o raio usa 11,5 e fica entre a camada de longe e a penúltima.
-    mesh.renderOrder = 10 + (LAYERS.length - i);
+    // Opacas: a mais perto primeiro, para o teste de profundidade descartar o que fica atrás.
+    mesh.renderOrder = 10 + i;
     group.add(mesh);
 
     if (spec.mill) {
@@ -247,7 +249,7 @@ export function createSilhouettes(camera: THREE.Camera, flowerTarget: THREE.Vect
       const p = center.clone().addScaledVector(right, MILL.wheelX).addScaledVector(forward, -0.05);
       wheel.position.set(p.x, MILL.wheelY, p.z);
       lookY(wheel);
-      wheel.renderOrder = mesh.renderOrder + 0.5;
+      wheel.renderOrder = mesh.renderOrder - 0.5;
       group.add(wheel);
     }
   });
