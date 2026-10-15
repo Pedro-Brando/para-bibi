@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { parseOptions } from './core/url';
 import { createClock } from './core/clock';
+import { frameFlower } from './core/framing';
 import { createStage } from './scene/stage';
 import { buildFlower } from './scene/flower/build';
 import { toBufferGeometry } from './scene/flower/toGeometry';
@@ -20,9 +21,9 @@ const GROW_SECONDS = 12;
 
 async function main() {
   const opts = parseOptions(location.search);
-  const stage = await createStage(document.body, opts.backend === 'webgl');
   const seed = opts.seed === 'name' ? NAME_SEED : cyrb128(opts.seed);
   const { params, meshes } = buildFlower(seed);
+  const stage = await createStage(document.body, opts.backend === 'webgl', frameFlower(meshes.height));
   const mats = createFlowerMaterials(flowerPalette(params));
 
   const seedMesh = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), mats.seed);

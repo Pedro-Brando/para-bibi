@@ -2,10 +2,11 @@ import * as THREE from 'three/webgpu';
 import { pass } from 'three/tsl';
 import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import type { Framing } from '../core/framing';
 
 export const MAX_DPR = 2;
 
-export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean) {
+export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean, framing: Framing) {
   const renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL });
   await renderer.init();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DPR));
@@ -19,11 +20,12 @@ export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#07060d');
 
-  // Enquadra a semente em y = 0 e a flor inteira (cerca de 1,3 de altura) em crescimento 1.
-  const camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 0.01, 50);
-  camera.position.set(0.9, 1.08, 2.1);
+  // Enquadramento calculado da altura desta flor (src/core/framing.ts): a semente em y = 0 e o topo do
+  // botão fechado cabem no quadro para qualquer seed; a flor da seed do nome fica como foi ajustada à mão.
+  const camera = new THREE.PerspectiveCamera(framing.fov, window.innerWidth / window.innerHeight, 0.01, 50);
+  camera.position.set(...framing.position);
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 0.62, 0);
+  controls.target.set(...framing.target);
   controls.enableDamping = true;
   controls.update();
 
