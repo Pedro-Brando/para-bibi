@@ -40,7 +40,7 @@ export function buildTube(branch: Branch, radialSegments: number): MeshData {
   for (let i = 0; i < nodes.length - 1; i++) {
     for (let j = 0; j < radialSegments; j++) {
       const a = i * ring + j, b = a + ring, c = b + 1, d = a + 1;
-      index.push(a, b, d, b, c, d);
+      index.push(a, d, b, b, d, c);
     }
   }
   return { position, normal, uv, index: new Uint32Array(index), aAge, aPivot, aAxis, aClosed, aGrow };

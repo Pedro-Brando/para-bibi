@@ -35,7 +35,7 @@ export function buildHead(head: Attachment, p: FlowerParams, rng: Rng): { petals
       const out = normalize(add(scale(ref, Math.cos(phi)), scale(side, Math.sin(phi))));
       const width = normalize(cross(up, out));
       const length = normalize(add(scale(up, Math.cos(openAngle)), scale(out, Math.sin(openAngle))));
-      const normal = normalize(cross(width, length));
+      const normal = normalize(cross(length, width));
       const origin = add(add(head.position, scale(out, coreR * (1 - layer * 0.25))), scale(up, layer * 0.004));
       const age = Math.min(0.76, head.age + 0.08 + (0.22 * order) / Math.max(1, total - 1));
       order++;
@@ -67,12 +67,12 @@ export function buildHead(head: Attachment, p: FlowerParams, rng: Rng): { petals
 export function buildLeaf(leaf: Attachment, rng: Rng): MeshData {
   const length = normalize(leaf.heading);
   const width = normalize(leaf.left);
-  const normal = normalize(cross(width, length));
+  const normal = normalize(cross(length, width));
   const local = buildPatch(
     { length: 0.2 * leaf.scale, width: 0.06 * leaf.scale, curl: 0.35, ruffle: 0.15, twist: range(rng, -0.3, 0.3), reflex: 0.35, profile: 'leaf' },
     8, 14,
   );
-  return placePatch(local, { origin: leaf.position, width, length, normal }, { age: leaf.age + 0.03, closed: 50 * DEG, swell: 0.06, open: 0.15 });
+  return placePatch(local, { origin: leaf.position, width, length, normal }, { age: leaf.age + 0.03, closed: -50 * DEG, swell: 0.06, open: 0.15 });
 }
 
 function sphere(center: Vec3, radius: number, pivot: Vec3, age: number): MeshData {
@@ -91,7 +91,7 @@ function sphere(center: Vec3, radius: number, pivot: Vec3, age: number): MeshDat
   for (let y = 0; y < rings; y++) {
     for (let x = 0; x < seg; x++) {
       const a = y * (seg + 1) + x, b = a + seg + 1;
-      idx.push(a, b, a + 1, b, b + 1, a + 1);
+      idx.push(a, a + 1, b, b, a + 1, b + 1);
     }
   }
   const n = pos.length / 3;
