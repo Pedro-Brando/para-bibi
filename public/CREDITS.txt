@@ -18,5 +18,6 @@ Fonte do poema e dos textos (public/fonts/*.woff2)
   https://openfontlicense.org
 
 Música (public/audio/neath-dark-waters.mp3)
-  "Neath Dark Waters" (tema de Amaurot), FINAL FANTASY XIV: Shadowbringers.
-  (c) SQUARE ENIX CO., LTD. Todos os direitos reservados. Uso pessoal, num presente privado.
+  "Neath Dark Waters" (tema de Amaurot), de FINAL FANTASY XIV: Shadowbringers.
+  Composição de Masayoshi Soken. (c) SQUARE ENIX CO., LTD. Todos os direitos reservados.
+  Usada sem fins comerciais, como homenagem pessoal.
