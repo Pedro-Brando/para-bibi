@@ -42,8 +42,8 @@ export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean
   const post = new THREE.RenderPipeline(renderer);
   const scenePass = pass(scene, camera);
   const color = scenePass.getTextureNode('output');
-  // Limiar um pouco abaixo do padrão para o rosa neon (veias, miolo) brilhar em repouso.
-  post.outputNode = color.add(bloom(color, 0.8, 0.4, 0.5));
+  // Limiar abaixo do padrão para o rosa neon (veias, miolo, borda) brilhar de leve em repouso.
+  post.outputNode = color.add(bloom(color, 0.8, 0.4, 0.45));
 
   const resize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;

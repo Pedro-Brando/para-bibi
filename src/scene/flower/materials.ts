@@ -36,11 +36,12 @@ function petalMaterial(p: FlowerPalette) {
   // max(..., 0): erro de arredondamento pode deixar a base negativa e pow(negativo) vira NaN.
   const rim = pow(max(float(1).sub(abs(dot(normalWorld, V.negate()))), 0), float(3)).mul(0.25);
 
-  // A pétala é em parte auto-iluminada (rosa chiclete sob qualquer luz); veias e borda em rosa neon.
+  // A pétala é em parte auto-iluminada (rosa chiclete sob qualquer luz); veias e borda em rosa neon,
+  // fortes o bastante para passar do limiar do bloom e brilhar de leve em repouso (bioluminescência).
   m.emissiveNode = albedo.mul(0.5)
-    .add(rgb(p.vein).mul(veins.mul(float(0.9).add(uPulse.mul(0.6)))))
+    .add(rgb(p.vein).mul(veins.mul(float(2.2).add(uPulse.mul(0.6)))))
     .add(rgb(p.petalTip).mul(back))
-    .add(rgb(p.vein).mul(rim));
+    .add(rgb(p.vein).mul(rim.mul(2.8)));
   return m;
 }
 
@@ -65,7 +66,7 @@ export function createFlowerMaterials(p: FlowerPalette) {
     // Caule e folhas levemente auto-iluminados na própria cor, para não sumirem no fundo escuro.
     stem: simpleMaterial(p.stem, p.stem, 0.35, THREE.FrontSide),
     leaf: simpleMaterial(p.leaf, p.leaf, 0.35, THREE.DoubleSide),
-    stamen: simpleMaterial(p.core, p.core, 1.6, THREE.FrontSide),
+    stamen: simpleMaterial(p.core, p.core, 2.5, THREE.FrontSide),
     seed,
   };
 }
