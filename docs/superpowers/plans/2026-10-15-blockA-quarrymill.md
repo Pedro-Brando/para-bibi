@@ -4,7 +4,7 @@ Plano enxuto (decisão do dono do projeto em 15 de outubro: caber em 6 a 8 horas
 
 ## Regras globais
 
-- Repositório `C:/Users/ph00r/source/repos/quarrymill`, branch nova `feat/blockA-quarrymill` a partir de `main`. Node 20.20, npm 10. Não mexer nas versões nem no `overrides` do `package.json`. Sem dependências novas.
+- Repositório `quarrymill (raiz do repositório)`, branch nova `feat/blockA-quarrymill` a partir de `main`. Node 20.20, npm 10. Não mexer nas versões nem no `overrides` do `package.json`. Sem dependências novas.
 - Three.js 0.186.1, `WebGPURenderer` + TSL. Conferir nomes de API em `node_modules/three` (exemplos `webgpu_*`), não de memória. Já conferidos na fase 1: `RenderPipeline`, `NeutralToneMapping`, `transformNormalToView`, `negateOnBackSide`, `mx_noise_float(texcoord, amplitude, pivot)`, `bloom(node, strength, radius, threshold)`.
 - Módulos de domínio (`src/eorzea`, `src/core`, `src/seed`, `src/lsystem`) não importam `three`.
 - O nome completo dela nunca aparece em nada. Nomes públicos permitidos: "Bibi Bilota", "Ana Beatriz".
@@ -65,5 +65,5 @@ Arquivos: `src/audio/thunder.ts`, `src/audio/rain.ts`, `src/audio/context.ts`.
 ## Pronto quando
 
 - `npm test`, `npm run typecheck`, `npm run build`, `npm run test:e2e` passam.
-- Capturas em `C:/Users/ph00r/AppData/Local/Temp/quarrymill-blockA/`: cena completa em repouso, durante um raio, e de um segundo ângulo. O implementador olha as capturas e confirma que a flor rosa continua sendo o ponto focal, a floresta lê como floresta noturna sob tempestade, e nada está preto, branco ou piscando com NaN.
-- Relatório em `C:/Users/ph00r/AppData/Local/Temp/quarrymill-blockA/report.md`: o que foi feito, comandos e resultados dos testes, decisões tomadas, o que ficou aquém.
+- Capturas em `<pasta temporária>/quarrymill-blockA/`: cena completa em repouso, durante um raio, e de um segundo ângulo. O implementador olha as capturas e confirma que a flor rosa continua sendo o ponto focal, a floresta lê como floresta noturna sob tempestade, e nada está preto, branco ou piscando com NaN.
+- Relatório em `<pasta temporária>/quarrymill-blockA/report.md`: o que foi feito, comandos e resultados dos testes, decisões tomadas, o que ficou aquém.

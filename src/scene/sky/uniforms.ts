@@ -14,3 +14,6 @@ export const uCityBlend = uniform(0);
 export const uEqToHor = uniform(new THREE.Matrix3());
 /** Ângulo (em radianos) de um pixel CSS na vertical: tamanhos de estrela em pixels, para qualquer fov. */
 export const uPixelAngle = uniform(0.001);
+/** Pulso de brilho em estrelas do catálogo perto de uma direção (cada verso que termina acende algumas). */
+export const uPulseDir = uniform(new THREE.Vector3(0, 1, 0));
+export const uPulse = uniform(0);

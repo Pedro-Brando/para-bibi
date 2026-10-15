@@ -1,12 +1,12 @@
 import * as THREE from 'three/webgpu';
 import type { Node } from 'three/webgpu';
 import {
-  float, vec2, vec3, uv, length, smoothstep, exp, max, min, pow, instanceIndex, time, mx_noise_float, instancedBufferAttribute,
+  float, vec2, vec3, uv, length, smoothstep, exp, max, min, pow, instanceIndex, time, mx_noise_float, instancedBufferAttribute, dot, hash,
 } from 'three/tsl';
 import { STAR_STRIDE } from '../../sky/catalog';
 import { raDecToVector } from '../../sky/frame';
 import { bvToRgb } from '../../sky/color';
-import { uPixelAngle, type uEqToHor } from './uniforms';
+import { uPixelAngle, uPulse, uPulseDir, type uEqToHor } from './uniforms';
 
 export const STAR_RADIUS = 380;
 
@@ -43,7 +43,10 @@ export function createStarField(catalog: Float32Array, rotation: Mat3Node, weigh
   const above = smoothstep(-0.005, 0.03, dir.y);
   const twinkleAmp = float(0.12).add(smoothstep(0.6, 0.05, sinAlt).mul(0.55));
   const twinkle = float(1).add(mx_noise_float(vec2(float(instanceIndex).mul(1.37), time.mul(2.6))).mul(twinkleAmp));
-  const intensity = min(pow(flux, 0.6), 4).mul(1.3).mul(twinkle).mul(above).mul(weight);
+  // Pulso: uma em cada três estrelas a menos de uns 9 graus da direção acende por um momento.
+  const near = smoothstep(0.988, 0.998, dot(dir, uPulseDir)).mul(hash(instanceIndex).greaterThan(0.66).select(1, 0));
+  const pulse = float(1).add(uPulse.mul(near).mul(5));
+  const intensity = min(pow(flux, 0.6), 4).mul(1.3).mul(twinkle).mul(above).mul(weight).mul(pulse);
   // Avermelha perto do horizonte: o azul se perde primeiro.
   const tint = aLook.xyz.mul(exp(vec3(0.03, 0.07, 0.16).mul(airmass.sub(1).negate())));
   const sizePx = min(float(3).add(pow(flux, 0.45).mul(6.5)), 24);

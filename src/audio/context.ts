@@ -1,7 +1,8 @@
-// AudioContext só nasce depois de um gesto do usuário. Por enquanto o primeiro clique na página liga o som;
-// o bloco C troca isso pela tela de entrada.
+// AudioContext só nasce depois de um gesto do usuário: o clique da tela de entrada (startAudio). Nas capturas
+// sem tela de entrada, o primeiro clique na página.
 
-export interface Audio { ctx: AudioContext; master: GainNode }
+/** `master`: a tempestade (chuva e trovão); `out`: tudo, inclusive a música (o botão de som). */
+export interface Audio { ctx: AudioContext; master: GainNode; out: GainNode }
 
 const MASTER_GAIN = 0.35;
 let audio: Audio | null = null;
@@ -17,18 +18,26 @@ export function onAudioReady(fn: (a: Audio) => void): void {
   else waiting.push(fn);
 }
 
+/** Cria o AudioContext; chamar dentro do gesto do usuário. */
+export function startAudio(): Audio {
+  if (audio) return audio;
+  const ctx = new AudioContext();
+  const out = ctx.createGain();
+  out.connect(ctx.destination);
+  const master = ctx.createGain();
+  master.gain.value = MASTER_GAIN;
+  master.connect(out);
+  audio = { ctx, master, out };
+  void ctx.resume();
+  for (const fn of waiting.splice(0)) fn(audio);
+  return audio;
+}
+
 export function enableAudioOnFirstGesture(target: EventTarget = window): void {
   const start = () => {
     target.removeEventListener('pointerdown', start);
     target.removeEventListener('keydown', start);
-    if (audio) return;
-    const ctx = new AudioContext();
-    const master = ctx.createGain();
-    master.gain.value = MASTER_GAIN;
-    master.connect(ctx.destination);
-    audio = { ctx, master };
-    void ctx.resume();
-    for (const fn of waiting.splice(0)) fn(audio);
+    startAudio();
   };
   target.addEventListener('pointerdown', start);
   target.addEventListener('keydown', start);
