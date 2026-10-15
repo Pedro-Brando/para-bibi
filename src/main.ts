@@ -1,13 +1,11 @@
-import * as THREE from 'three/webgpu';
 import { parseOptions } from './core/url';
 import { createClock } from './core/clock';
 import { frameFlower } from './core/framing';
 import { createStage } from './scene/stage';
 import { buildFlower } from './scene/flower/build';
-import { toBufferGeometry } from './scene/flower/toGeometry';
-import { createFlowerMaterials, uFlash, SEED_FADE_END } from './scene/flower/materials';
+import { createFlowerGroup } from './scene/flower/group';
+import { uFlash, SEED_FADE_END } from './scene/flower/materials';
 import { uGrowth } from './scene/flower/growthNode';
-import { flowerPalette } from './flower/params';
 import { NAME_SEED } from './seed/constants';
 import { cyrb128 } from './seed/hash';
 import { eorzeaTime, formatEt, FIRST_DATE_UNIX } from './eorzea/time';
@@ -25,6 +23,10 @@ declare global {
       strike?: () => void;
       /** Só na cena completa: conduz os céus (bloco C fará isso pelo scroll) e aponta a câmera. */
       sky?: { set(u: Partial<Record<SkyUniform, number>>): void; look(what: LookTarget): void };
+      /** Só no site: progresso suavizado do scroll e um salto direto (testes e capturas). */
+      progress?: () => number;
+      jump?: (p: number) => void;
+      entered?: boolean;
     };
   }
 }
@@ -33,21 +35,15 @@ const GROW_SECONDS = 12;
 
 async function main() {
   const opts = parseOptions(location.search);
+  // O site (tela de entrada, scroll, poema). Com growth, view, dev ou scene=flower fica a cena de captura.
+  if (opts.scene === 'full' && opts.growth === null && opts.view === 'default' && !opts.dev) {
+    const { runSite } = await import('./site');
+    return runSite(opts);
+  }
   const seed = opts.seed === 'name' ? NAME_SEED : cyrb128(opts.seed);
   const { params, meshes } = buildFlower(seed);
   const stage = await createStage(document.body, opts.backend === 'webgl', frameFlower(meshes.height), opts.dev || opts.scene === 'flower');
-  const mats = createFlowerMaterials(flowerPalette(params));
-
-  const seedMesh = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), mats.seed);
-  const group = new THREE.Group();
-  group.add(
-    new THREE.Mesh(toBufferGeometry(meshes.stem), mats.stem),
-    new THREE.Mesh(toBufferGeometry(meshes.leaves), mats.leaf),
-    new THREE.Mesh(toBufferGeometry(meshes.petals), mats.petal),
-    new THREE.Mesh(toBufferGeometry(meshes.stamens), mats.stamen),
-    seedMesh,
-  );
-  for (const child of group.children) child.frustumCulled = false;
+  const { group, seedMesh } = createFlowerGroup(params, meshes);
   stage.scene.add(group);
 
   // Cena completa: Quarrymill sob a tempestade. Com scene=flower fica só a flor no fundo escuro (fase 1).
