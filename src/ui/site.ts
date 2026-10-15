@@ -122,3 +122,39 @@ export function createText(cls: string, text = '') {
   document.body.appendChild(e);
   return e;
 }
+
+const chevron = (up: boolean) =>
+  `<svg viewBox="0 0 24 14" width="26" height="15" aria-hidden="true"><path d="${up ? 'M2 12 L12 2 L22 12' : 'M2 2 L12 12 L22 2'}" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/** As setinhas no centro de baixo (a de subir mais apagada) e uma linha fina de progresso na lateral. */
+export function createStepper(onStep: (dir: 1 | -1) => void) {
+  const nav = el('nav', 'stepper');
+  nav.setAttribute('aria-label', 'passos');
+  const make = (dir: 1 | -1, label: string) => {
+    const b = el('button', dir > 0 ? 'step-next' : 'step-prev');
+    b.type = 'button';
+    b.setAttribute('aria-label', label);
+    b.innerHTML = chevron(dir < 0);
+    b.addEventListener('click', () => onStep(dir));
+    return b;
+  };
+  const prev = make(-1, 'voltar');
+  const next = make(1, 'seguir');
+  nav.append(prev, next);
+  const track = el('div', 'progress');
+  const fill = el('div', 'fill');
+  track.append(fill);
+  document.body.append(nav, track);
+  let shown = '';
+  return {
+    show() { nav.classList.add('on'); track.classList.add('on'); },
+    update(p: number, canPrev: boolean, canNext: boolean) {
+      const key = `${p.toFixed(3)}${canPrev}${canNext}`;
+      if (key === shown) return;
+      shown = key;
+      fill.style.transform = `scaleY(${p.toFixed(3)})`;
+      prev.classList.toggle('off', !canPrev);
+      next.classList.toggle('off', !canNext);
+    },
+  };
+}

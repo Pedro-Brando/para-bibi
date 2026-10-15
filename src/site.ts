@@ -5,13 +5,15 @@ import { frameFlower } from './core/framing';
 import { createStage } from './scene/stage';
 import { buildFlower } from './scene/flower/build';
 import { createFlowerGroup } from './scene/flower/group';
-import { uFlash, SEED_FADE_END } from './scene/flower/materials';
+import { uFlash, uPulse as uFlowerPulse, SEED_FADE_END } from './scene/flower/materials';
 import { uGrowth } from './scene/flower/growthNode';
 import { NAME_SEED } from './seed/constants';
 import { cyrb128 } from './seed/hash';
 import { eorzeaTime, formatEt, FIRST_DATE_UNIX } from './eorzea/time';
 import { weatherChance, southShroudWeather, weatherLabelPt } from './eorzea/weather';
 import { stateAt } from './timeline/timeline';
+import { STEPS, StepNav } from './timeline/steps';
+import { createNameFlower } from './ui/nameFlower';
 import { nightsTogether } from './nights/count';
 import { createWorld } from './scene/world';
 import { createCameraPath } from './scene/cameraPath';
@@ -23,7 +25,7 @@ import { playThunder } from './audio/thunder';
 import { createRainSound } from './audio/rain';
 import { createMusic, setSound } from './audio/music';
 import { createPoem } from './ui/poem';
-import { isSmallScreen, showSmallScreen, createEntry, createCorner, createText } from './ui/site';
+import { isSmallScreen, showSmallScreen, createEntry, createCorner, createText, createStepper } from './ui/site';
 
 const SCROLL_RATE = 3.2; // amortecimento exponencial do progresso, por segundo
 const EXPLORE_AT = 0.995;
@@ -44,7 +46,10 @@ function writeSeen(n: number) {
   try { localStorage.setItem(SEEN_KEY, String(n)); } catch { /* sem armazenamento, tudo aparece normalmente */ }
 }
 
-/** O site: tela de entrada, scroll nativo conduzindo a linha do tempo, poema, as noites e o modo explorar. */
+/**
+ * O site: tela de entrada, scroll nativo conduzindo a linha do tempo (livre), setinhas e teclado andando um passo
+ * de cada vez, a flor do nome, poema, as noites e o modo explorar.
+ */
 export async function runSite(opts: AppOptions) {
   if (isSmallScreen()) { showSmallScreen(); return; }
   document.documentElement.classList.add('site');
@@ -58,8 +63,8 @@ export async function runSite(opts: AppOptions) {
   const seed = opts.seed === 'name' ? NAME_SEED : cyrb128(opts.seed);
   const { params, meshes } = buildFlower(seed);
   const framing = frameFlower(meshes.height);
-  const stage = await createStage(document.body, opts.backend === 'webgl', framing, false);
-  const { group, seedMesh } = createFlowerGroup(params, meshes);
+  const stage = await createStage(document.body, opts.backend === 'webgl', framing, false, true);
+  const { group, seedMesh, head } = createFlowerGroup(params, meshes);
   stage.scene.add(group);
 
   let audio: Audio | null = null;
@@ -84,7 +89,10 @@ export async function runSite(opts: AppOptions) {
   const veil = createVeil();
   stage.scene.add(veil);
   const camPath = createCameraPath(framing);
+  camPath.setFocusTarget(head.clone().add(new THREE.Vector3(0, 0.04, 0)));
   const camera = stage.camera;
+  const vignette = createText('vignette');
+  const nameFlower = createNameFlower(document.body, NAME_SEED);
   const label = createText('place-label');
   const eorzeaText = eorzeaLabel();
   const phrase = createText('phrase', PHRASE);
@@ -104,10 +112,34 @@ export async function runSite(opts: AppOptions) {
   let p = 0;
   const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
   const scrollTarget = () => Math.min(1, Math.max(0, window.scrollY / maxScroll()));
+  const nav = new StepNav();
+  // Onde a última transição das setas parou: o scroll em pixels arredonda o p, e o próximo passo sai daqui.
+  let settled = { p: 0, scrollY: 0 };
   const jump = (to: number) => {
+    nav.cancel();
     window.scrollTo({ top: to * maxScroll(), behavior: 'instant' });
     p = to;
+    settled = { p: to, scrollY: window.scrollY };
   };
+  const step = (dir: 1 | -1) => {
+    if (!window.__quarrymill?.entered) return;
+    nav.command(dir, window.scrollY === settled.scrollY ? settled.p : scrollTarget());
+  };
+  const stepper = createStepper(step);
+  // A roda e o trackpad continuam livres; mexer neles no meio de uma transição das setas cancela a transição.
+  const stopNav = () => { if (nav.busy) nav.cancel(); };
+  window.addEventListener('wheel', stopNav, { passive: true });
+  window.addEventListener('touchstart', stopNav, { passive: true });
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const onButton = e.target instanceof HTMLButtonElement && (e.key === ' ' || e.key === 'Enter');
+    if (onButton) return;
+    const dir = e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey) ? 1
+      : e.key === 'ArrowUp' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey) ? -1 : 0;
+    if (!dir) return;
+    e.preventDefault();
+    step(dir);
+  });
   const fade = document.createElement('div');
   fade.className = 'fade';
   document.body.appendChild(fade);
@@ -138,6 +170,7 @@ export async function runSite(opts: AppOptions) {
     strike: () => world.strike(),
     progress: () => p,
     jump,
+    navBusy: () => nav.busy,
     entered: false,
   };
 
@@ -145,11 +178,21 @@ export async function runSite(opts: AppOptions) {
   let frames = 0;
   let elapsed = 0;
   let savedSeen = false;
+  let lastName = 0;
   stage.renderer.setAnimationLoop(() => {
-    const dt = Math.min(clock.step(), 0.1);
+    const rawDt = clock.step();
+    const dt = Math.min(rawDt, 0.1);
     elapsed += dt;
-    p += (scrollTarget() - p) * (1 - Math.exp(-dt * SCROLL_RATE));
-    if (Math.abs(scrollTarget() - p) < 1e-4) p = scrollTarget();
+    const stepped = nav.update(dt);
+    if (stepped !== null) {
+      // As setas conduzem o próprio scroll da página, então a barra e o scroll livre continuam coerentes.
+      p = stepped;
+      window.scrollTo({ top: p * maxScroll(), behavior: 'instant' });
+      if (!nav.busy) settled = { p, scrollY: window.scrollY };
+    } else {
+      p += (scrollTarget() - p) * (1 - Math.exp(-dt * SCROLL_RATE));
+      if (Math.abs(scrollTarget() - p) < 1e-4) p = scrollTarget();
+    }
     const s = stateAt(p);
     const exploring = p >= EXPLORE_AT;
     corner.setExplore(exploring);
@@ -169,7 +212,15 @@ export async function runSite(opts: AppOptions) {
     uVeil.value = s.veil;
     veil.visible = s.veil > 0.001;
     world.setSilhouettes(!s.skyView);
+    world.setGround(!s.skyView);
     group.visible = !s.skyView;
+
+    // A flor do nome: a cena escurece em volta, os textos em etapas, e um pulso quando o nome vira número.
+    nameFlower.update(s.nameStage);
+    vignette.style.opacity = (s.nameFocus * 0.9).toFixed(3);
+    if (lastName < 1.9 && s.nameStage >= 1.9) uFlowerPulse.value = 1;
+    lastName = s.nameStage;
+    uFlowerPulse.value = Math.max(0, uFlowerPulse.value - dt * 0.7);
 
     flashT = Math.max(0, flashT - dt * 2.5);
     const flicker = flashT > 0 ? flashT * (0.6 + 0.4 * Math.sin(flashT * 40)) : 0;
@@ -180,7 +231,7 @@ export async function runSite(opts: AppOptions) {
     world.update(dt, elapsed);
     rainSound?.setIntensity(world.uRain.value);
     const orion = sky.orionDirection();
-    camPath.apply(camera, s.cameraT, s.skyView, orion, s.nights, dt);
+    camPath.apply(camera, s.cameraT, s.skyView, orion, s.nights, dt, s.nameFocus, elapsed);
     nights.update(dt, orion, s.nights, s.nights >= 1);
     if (s.nights >= 1 && !savedSeen) { savedSeen = true; writeSeen(count); }
 
@@ -190,7 +241,8 @@ export async function runSite(opts: AppOptions) {
     if (label.textContent !== text) label.textContent = text;
     label.style.opacity = (s.labelOpacity * 0.55).toFixed(3);
 
-    stage.render();
+    stepper.update(p, nav.target(-1, p) >= 0, p < STEPS[STEPS.length - 1]!.p - 1e-4);
+    stage.render(rawDt);
     if (++frames === 3) window.__quarrymill!.ready = true;
   });
 
@@ -198,6 +250,7 @@ export async function runSite(opts: AppOptions) {
     // Primeiro libera o scroll: se o som falhar logo abaixo, o site continua.
     document.documentElement.classList.add('entered');
     window.__quarrymill!.entered = true;
+    stepper.show();
     audio = startAudio();
     rainSound = createRainSound(audio);
     music = createMusic(audio, `${import.meta.env.BASE_URL}audio/neath-dark-waters.mp3`);
