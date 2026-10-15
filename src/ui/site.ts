@@ -45,10 +45,16 @@ export function createEntry() {
       button.classList.add('ready');
       button.focus({ preventScroll: true });
       button.addEventListener('click', () => {
-        onEnter();
-        root.classList.add('gone');
-        setTimeout(() => root.remove(), 1800);
-        resolve();
+        // Se o som falhar (AudioContext, elemento de mídia), a visita segue sem som em vez de travar aqui.
+        try {
+          onEnter();
+        } catch (err) {
+          console.error(err);
+        } finally {
+          root.classList.add('gone');
+          setTimeout(() => root.remove(), 1800);
+          resolve();
+        }
       }, { once: true });
     },
   };

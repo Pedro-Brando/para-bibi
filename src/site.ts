@@ -195,12 +195,13 @@ export async function runSite(opts: AppOptions) {
   });
 
   entry.ready(() => {
+    // Primeiro libera o scroll: se o som falhar logo abaixo, o site continua.
+    document.documentElement.classList.add('entered');
+    window.__quarrymill!.entered = true;
     audio = startAudio();
     rainSound = createRainSound(audio);
     music = createMusic(audio, `${import.meta.env.BASE_URL}audio/neath-dark-waters.mp3`);
     music.start();
-    document.documentElement.classList.add('entered');
-    window.__quarrymill!.entered = true;
   });
   await entry.entered;
 }
