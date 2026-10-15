@@ -4,6 +4,8 @@ export interface AppOptions {
   freeze: boolean;
   dev: boolean;
   seed: 'name' | string;
+  /** 'full': Quarrymill inteira; 'flower': só a flor no fundo escuro, como na fase 1. */
+  scene: 'full' | 'flower';
 }
 
 export function parseOptions(search: string): AppOptions {
@@ -16,5 +18,6 @@ export function parseOptions(search: string): AppOptions {
     freeze: q.get('freeze') === '1',
     dev: q.get('dev') === '1',
     seed: q.get('seed') ?? 'name',
+    scene: q.get('scene') === 'flower' ? 'flower' : 'full',
   };
 }

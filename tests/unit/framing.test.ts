@@ -41,5 +41,5 @@ describe('frameFlower', () => {
       expect(top, `seed frame-${i}: petal top (height ${meshes.height.toFixed(2)})`).toBeLessThan(0.95);
       expect(bottom, `seed frame-${i}: seed at the base`).toBeGreaterThan(-0.95);
     }
-  });
+  }, 20_000); // constrói 100 flores: uns 3 a 5 s, perto demais do limite padrão de 5 s
 });
