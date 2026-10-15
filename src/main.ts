@@ -144,5 +144,7 @@ function showLabel() {
 
 main().catch((err) => {
   console.error(err);
+  // A tela de entrada do site é opaca e ficaria em "carregando" para sempre por cima da mensagem.
+  document.querySelector('.entry')?.remove();
   document.body.insertAdjacentHTML('beforeend', '<p style="color:#ffb3d1;font:16px serif;padding:2rem">Seu navegador não conseguiu abrir a cena 3D.</p>');
 });
