@@ -4,7 +4,7 @@ Plano enxuto (orçamento total de 6 a 8 horas, sem Fable, sem revisão por bloco
 
 ## Regras globais
 
-- Repositório `C:/Users/ph00r/source/repos/quarrymill`, branch `feat/blockC-experience` a partir de `main` (blocos A e B já na main). Node 20.20, npm 10. Nenhuma dependência nova: scroll suave e linha do tempo são código próprio.
+- Repositório `quarrymill (raiz do repositório)`, branch `feat/blockC-experience` a partir de `main` (blocos A e B já na main). Node 20.20, npm 10. Nenhuma dependência nova: scroll suave e linha do tempo são código próprio.
 - Three.js 0.186.1 com `WebGPURenderer` + TSL.
 - Módulos de domínio (`src/timeline`, `src/nights`, `src/core`) não importam `three`.
 - O nome completo dela nunca aparece. Nomes públicos: "Ana Beatriz", "Bibi Bilota". Texto visível em português do Brasil, exceto o poema original em inglês. Nenhum U+2014 em lugar nenhum (inclusive no poema: o original usa hífen "-", mantenha o hífen). Commits pequenos com `git commit -F -`, terminando em `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
@@ -71,7 +71,7 @@ com medo de que parem de vir
 
 ## C5. Música, entrada e modo explorar
 
-- Copiar `C:/Users/ph00r/Downloads/FFXIV OST Amaurot Overworld Theme ( Neath Dark Waters ) SPOILERS.mp3` para `public/audio/neath-dark-waters.mp3`.
+- Copiar `<pasta de downloads>/FFXIV OST Amaurot Overworld Theme ( Neath Dark Waters ) SPOILERS.mp3` para `public/audio/neath-dark-waters.mp3`.
 - Tela de entrada: fundo escuro, "Ana Beatriz" em Cormorant Garamond, e "clique para entrar". Durante a tela, a cena carrega e compila shaders (`renderer.compileAsync` quando disponível). O clique cria o `AudioContext` (substitui o "primeiro clique" do bloco A), inicia a música com fade in de 4 s e libera o scroll.
 - Botão de som discreto, sempre visível (liga e desliga música e tempestade).
 - A música abaixa levemente durante trovões.
@@ -85,5 +85,5 @@ com medo de que parem de vir
 ## Pronto quando
 
 - `npm test`, `npm run typecheck`, `npm run build`, `npm run test:e2e` passam. Teste e2e: tela de entrada aparece, clique entra, rolar até o fim chega ao modo explorar sem erros no console.
-- Capturas em `C:/Users/ph00r/AppData/Local/Temp/quarrymill-blockC/` de: entrada, flor crescendo, subida, tempestade, céu abrindo, Órion com a frase, dois versos do poema, as noites, modo explorar. O implementador confere cada uma.
-- Relatório em `C:/Users/ph00r/AppData/Local/Temp/quarrymill-blockC/report.md`.
+- Capturas em `<pasta temporária>/quarrymill-blockC/` de: entrada, flor crescendo, subida, tempestade, céu abrindo, Órion com a frase, dois versos do poema, as noites, modo explorar. O implementador confere cada uma.
+- Relatório em `<pasta temporária>/quarrymill-blockC/report.md`.

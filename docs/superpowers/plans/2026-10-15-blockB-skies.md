@@ -4,7 +4,7 @@ Plano enxuto (orçamento total de 6 a 8 horas, sem Fable, sem revisão por bloco
 
 ## Regras globais
 
-- Repositório `C:/Users/ph00r/source/repos/quarrymill`, branch `feat/blockB-skies` a partir de `main` (o bloco A já está na main). Node 20.20, npm 10; não mexer nas versões existentes nem no `overrides`.
+- Repositório `quarrymill (raiz do repositório)`, branch `feat/blockB-skies` a partir de `main` (o bloco A já está na main). Node 20.20, npm 10; não mexer nas versões existentes nem no `overrides`.
 - Única dependência nova permitida: `astronomy-engine@2.1.19` (MIT), versão exata.
 - Three.js 0.186.1 com `WebGPURenderer` + TSL; conferir APIs em `node_modules/three`.
 - Módulos de domínio (`src/sky`, `src/eorzea`, `src/core`) não importam `three`.
@@ -57,5 +57,5 @@ Arquivos em `src/scene/sky/`.
 ## Pronto quando
 
 - `npm test`, `npm run typecheck`, `npm run build`, `npm run test:e2e` passam.
-- Capturas em `C:/Users/ph00r/AppData/Local/Temp/quarrymill-blockB/`: tempestade de Eorzea vista de baixo, meio da passagem, céu real com Órion desenhado (SP), mesmo céu em GV. O implementador confere que Órion está reconhecível, alto no céu, e que a Lua aparece em quarto minguante.
-- Relatório em `C:/Users/ph00r/AppData/Local/Temp/quarrymill-blockB/report.md`.
+- Capturas em `<pasta temporária>/quarrymill-blockB/`: tempestade de Eorzea vista de baixo, meio da passagem, céu real com Órion desenhado (SP), mesmo céu em GV. O implementador confere que Órion está reconhecível, alto no céu, e que a Lua aparece em quarto minguante.
+- Relatório em `<pasta temporária>/quarrymill-blockB/report.md`.
