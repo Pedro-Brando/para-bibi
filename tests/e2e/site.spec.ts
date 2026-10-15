@@ -54,7 +54,8 @@ test('@gallery @site captures', async ({ page }) => {
   await at('03-flower-growing', 0.26);
   await at('04-flower-grown', 0.36);
   await at('05-ascent', 0.45);
-  await at('06-storm', 0.56);
+  await at('05b-veil', 0.515);
+  await at('06-storm', 0.585);
   await at('07-sky-opening', 0.66);
   await at('08-orion-phrase', 0.745);
   await at('09-poem-line', 0.8);
@@ -62,9 +63,12 @@ test('@gallery @site captures', async ({ page }) => {
   await at('11-poem-couplet', 0.965);
   await at('12-nights', 0.99, 2500);
   await at('13-explore', 1, 4000);
-  await page.mouse.move(1000, 200);
-  await page.getByRole('button', { name: 'Os dois' }).click();
-  await page.waitForTimeout(4000);
-  await page.screenshot({ path: `${dir}/14-explore-both.png` });
+  if (!only || only.includes('14')) {
+    await scrollTo(page, 1);
+    await page.mouse.move(1000, 200);
+    await page.getByRole('button', { name: 'Os dois' }).click();
+    await page.waitForTimeout(4000);
+    await page.screenshot({ path: `${dir}/14-explore-both.png` });
+  }
   expect(errors).toEqual([]);
 });

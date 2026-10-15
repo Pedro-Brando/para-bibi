@@ -6,7 +6,3 @@ export const uRain = uniform(1);
 export const uFogOn = uniform(1);
 /** Brilho do raio visível, 0 a 1 (a fita some em cerca de 0,3 s). */
 export const uBolt = uniform(0);
-/** Opacidade das duas camadas de silhueta mais perto (saem quando a câmera sobe para o céu). */
-export const uNearLayers = uniform(1);
-/** Opacidade da camada do moinho (a terceira): olhando para Órion lá de cima, a borda de cima do plano apareceria. */
-export const uMidLayer = uniform(1);

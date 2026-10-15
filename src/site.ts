@@ -16,6 +16,7 @@ import { nightsTogether } from './nights/count';
 import { createWorld } from './scene/world';
 import { createCameraPath } from './scene/cameraPath';
 import { createNights } from './scene/nights';
+import { createVeil, uVeil } from './scene/veil';
 import { uPulse, uPulseDir } from './scene/sky/uniforms';
 import { startAudio, type Audio } from './audio/context';
 import { playThunder } from './audio/thunder';
@@ -80,6 +81,8 @@ export async function runSite(opts: AppOptions) {
   const nights = createNights(count, seen === null ? count : Math.min(seen, count));
   sky.object.add(nights.object);
 
+  const veil = createVeil();
+  stage.scene.add(veil);
   const camPath = createCameraPath(framing);
   const camera = stage.camera;
   const label = createText('place-label');
@@ -162,7 +165,11 @@ export async function runSite(opts: AppOptions) {
     sky.uWorldBlend.value = explore.worldNow;
     sky.uOrion.value = s.orion;
     sky.uCityBlend.value = explore.cityNow;
-    world.setNearLayers(s.nearLayers, s.midLayer);
+    // Com o véu fechado a cena troca: lá em cima, olhando o céu, as silhuetas e a flor não aparecem.
+    uVeil.value = s.veil;
+    veil.visible = s.veil > 0.001;
+    world.setSilhouettes(!s.skyView);
+    group.visible = !s.skyView;
 
     flashT = Math.max(0, flashT - dt * 2.5);
     const flicker = flashT > 0 ? flashT * (0.6 + 0.4 * Math.sin(flashT * 40)) : 0;
@@ -173,7 +180,7 @@ export async function runSite(opts: AppOptions) {
     world.update(dt, elapsed);
     rainSound?.setIntensity(world.uRain.value);
     const orion = sky.orionDirection();
-    camPath.apply(camera, s.cameraT, orion, s.nights, dt);
+    camPath.apply(camera, s.cameraT, s.skyView, orion, s.nights, dt);
     nights.update(dt, orion, s.nights, s.nights >= 1);
     if (s.nights >= 1 && !savedSeen) { savedSeen = true; writeSeen(count); }
 

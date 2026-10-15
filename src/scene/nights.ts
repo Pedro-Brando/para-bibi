@@ -6,7 +6,7 @@ import { uPixelAngle } from './sky/uniforms';
 import { STAR_RADIUS } from './sky/stars';
 
 /** Sprites instanciados com posição, cor, tamanho (px) e alfa escritos pela CPU a cada quadro. */
-function spriteCloud(max: number) {
+function spriteCloud(max: number, halo = 0.25) {
   const pos = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
   const look = new THREE.InstancedBufferAttribute(new Float32Array(max * 4), 4); // rgb, alfa
   const size = new THREE.InstancedBufferAttribute(new Float32Array(max), 1);
@@ -21,7 +21,7 @@ function spriteCloud(max: number) {
   m.scaleNode = vec2(aSize.mul(uPixelAngle));
   const r = length(uv().sub(0.5)).mul(2);
   // Núcleo firme e um halo largo: lê como estrela, não como disco.
-  const glow = smoothstep(1, 0, r).pow(6).mul(0.9).add(smoothstep(1, 0.0, r).pow(2).mul(0.25));
+  const glow = smoothstep(1, 0, r).pow(8).mul(1.1).add(smoothstep(1, 0.0, r).pow(2.5).mul(halo));
   m.colorNode = aLook.xyz.mul(aLook.w);
   m.opacityNode = glow.mul(float(1));
   const sprite = new THREE.Sprite(m);
@@ -37,7 +37,7 @@ function spriteCloud(max: number) {
   return { sprite, set, flush };
 }
 
-const GOLD_PINK: [number, number, number] = [2.0, 1.5, 1.5];
+const GOLD_PINK: [number, number, number] = [2.4, 1.6, 1.85];
 const DRIFT_WHITE: [number, number, number] = [0.85, 0.88, 1.0];
 const DRIFT_POOL = 360;
 /** Uma estrela comum nova a cada tantos segundos depois do poema. */
@@ -54,7 +54,7 @@ const hash = (n: number) => fract(Math.sin(n * 91.345 + 7.13) * 43758.5453);
  * continuam surgindo devagar, sem fim (um anel de sprites reaproveitados).
  */
 export function createNights(count: number, firstNew: number) {
-  const nights = spriteCloud(count);
+  const nights = spriteCloud(count, 0.5);
   const drift = spriteCloud(DRIFT_POOL);
   const object = new THREE.Group();
   object.add(nights.sprite, drift.sprite);
@@ -92,7 +92,7 @@ export function createNights(count: number, firstNew: number) {
           y += (1 - e) * 22;
           boost = 1 + (1 - f) * 1.5;
         }
-        nights.set(i, at(center, x, y, p), GOLD_PINK, on * boost, 13 * s.size * boost);
+        nights.set(i, at(center, x, y, p), GOLD_PINK, on * boost, 22 * s.size * boost);
       }
       nights.flush();
 

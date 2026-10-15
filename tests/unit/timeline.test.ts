@@ -51,11 +51,15 @@ describe('stateAt', () => {
       prev = s;
     }
   });
-  it('fades the near silhouette layers, then the mill layer, as the camera rises to the sky', () => {
-    expect(stateAt(0.45)).toMatchObject({ nearLayers: 1, midLayer: 1 });
-    expect(stateAt(0.6).nearLayers).toBe(0);
-    expect(stateAt(0.6).midLayer).toBeGreaterThan(0);
-    expect(stateAt(0.66).midLayer).toBe(0);
+  it('closes a storm-mist veil over the ascent and opens it on the sky from below', () => {
+    expect(stateAt(0.47).veil).toBe(0);
+    expect(stateAt(0.53).veil).toBe(1);
+    expect(stateAt(0.56).veil).toBe(1);
+    expect(stateAt(0.6).veil).toBe(0);
+    // A troca de cena (silhuetas e flor fora, câmera no céu) acontece com o véu fechado.
+    expect(stateAt(0.53).skyView).toBe(false);
+    expect(stateAt(0.545)).toMatchObject({ skyView: true, veil: 1, cameraT: 1 });
+    expect(stateAt(0.9).skyView).toBe(true);
   });
   it('clamps p outside [0, 1]', () => {
     expect(stateAt(-3)).toEqual(stateAt(0));

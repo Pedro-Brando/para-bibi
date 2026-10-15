@@ -33,11 +33,14 @@ export interface SceneState {
   realLabel: boolean;
   /** A frase das duas cidades, sobre o céu real. */
   phraseOpacity: number;
-  /** As duas camadas de silhueta mais perto: saem enquanto a câmera sobe, porque as copas cobririam Órion. */
-  nearLayers: number;
-  /** A camada do moinho, logo depois: lá de cima, olhando para Órion, a borda de cima do plano dela apareceria. */
-  midLayer: number;
+  /** Véu de névoa da tempestade na tela inteira: fecha no fim da subida, abre já olhando o céu por baixo. */
+  veil: number;
+  /** Com o véu fechado a cena troca: silhuetas e flor saem e a câmera passa a olhar para o céu. */
+  skyView: boolean;
 }
+
+/** Instante da troca, no meio do trecho em que o véu está opaco (0,53 a 0,56). */
+export const SKY_SWAP = 0.54;
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 /** Smoothstep de a até b (0 antes, 1 depois). */
@@ -48,7 +51,7 @@ const ss = (a: number, b: number, x: number) => {
 const lin = (a: number, b: number, x: number) => clamp01((x - a) / (b - a));
 
 /** Marcos da câmera: linear por trechos (smoothstep pararia a câmera em cada marco). */
-const CAMERA_KEYS: [number, number][] = [[0, 0], [0.15, 0.08], [0.35, 0.25], [0.5, 0.62], [0.6, 0.8], [0.7, 1]];
+const CAMERA_KEYS: [number, number][] = [[0, 0], [0.15, 0.08], [0.35, 0.3], [0.5, 0.9], [SKY_SWAP, 1]];
 
 function cameraAt(p: number): number {
   for (let i = 1; i < CAMERA_KEYS.length; i++) {
@@ -78,7 +81,7 @@ export function stateAt(progress: number): SceneState {
     labelOpacity: realLabel ? ss(0.68, 0.72, p) : 1 - ss(0.62, 0.66, p),
     realLabel,
     phraseOpacity: ss(0.705, 0.725, p) * (1 - ss(0.76, 0.78, p)),
-    nearLayers: 1 - ss(0.5, 0.6, p),
-    midLayer: 1 - ss(0.56, 0.65, p),
+    veil: ss(0.48, 0.53, p) * (1 - ss(0.56, 0.6, p)),
+    skyView: p >= SKY_SWAP,
   };
 }
