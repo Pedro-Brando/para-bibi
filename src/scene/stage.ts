@@ -6,7 +6,7 @@ import type { Framing } from '../core/framing';
 
 export const MAX_DPR = 2;
 
-export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean, framing: Framing) {
+export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean, framing: Framing, orbit = true) {
   const renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL });
   await renderer.init();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DPR));
@@ -22,11 +22,14 @@ export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean
 
   // Enquadramento calculado da altura desta flor (src/core/framing.ts): a semente em y = 0 e o topo do
   // botão fechado cabem no quadro para qualquer seed; a flor da seed do nome fica como foi ajustada à mão.
-  const camera = new THREE.PerspectiveCamera(framing.fov, window.innerWidth / window.innerHeight, 0.01, 50);
+  // far cobre a cúpula do céu (raio 400) da cena completa.
+  const camera = new THREE.PerspectiveCamera(framing.fov, window.innerWidth / window.innerHeight, 0.01, 1000);
   camera.position.set(...framing.position);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(...framing.target);
   controls.enableDamping = true;
+  // Na cena completa o plano é fixo e composto; OrbitControls só com ?dev=1 (e na cena só da flor).
+  controls.enabled = orbit;
   controls.update();
 
   // Luar frio mas quase branco (um azul saturado fazia o rosa virar lavanda), ambiente quase nulo.
