@@ -10,7 +10,8 @@ export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean
   await renderer.init();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DPR));
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.toneMapping = THREE.AgXToneMapping;
+  // Neutral (Khronos PBR Neutral) preserva o rosa saturado; AgX lavava as pétalas em pastel.
+  renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.1;
   canvasParent.appendChild(renderer.domElement);
   const backend: 'webgpu' | 'webgl2' = renderer.backend instanceof THREE.WebGPUBackend ? 'webgpu' : 'webgl2';
@@ -18,18 +19,20 @@ export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#07060d');
 
-  const camera = new THREE.PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.01, 50);
-  camera.position.set(0.9, 1.05, 1.9);
+  // Enquadra a semente em y = 0 e a flor inteira (cerca de 1,3 de altura) em crescimento 1.
+  const camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 0.01, 50);
+  camera.position.set(0.9, 1.08, 2.1);
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 0.75, 0);
+  controls.target.set(0, 0.62, 0);
   controls.enableDamping = true;
   controls.update();
 
-  // Luar frio, ambiente quase nulo, contraluz rosa fraca.
-  const moon = new THREE.DirectionalLight('#8fa3ff', 0.7);
+  // Luar frio mas quase branco (um azul saturado fazia o rosa virar lavanda), ambiente quase nulo.
+  const moon = new THREE.DirectionalLight('#dfe6ff', 0.9);
   moon.position.set(-1.5, 3, 1.2);
   scene.add(moon, new THREE.HemisphereLight('#1b2140', '#050408', 0.25));
-  const flash = new THREE.PointLight('#cfd8ff', 0, 8, 1.5);
+  // Relâmpago rosado: a flor acende, mas não estoura em branco.
+  const flash = new THREE.PointLight('#ffd6ec', 0, 8, 1.5);
   flash.position.set(0.3, 1.6, -1.2);
   scene.add(flash);
 
@@ -37,7 +40,8 @@ export async function createStage(canvasParent: HTMLElement, forceWebGL: boolean
   const post = new THREE.RenderPipeline(renderer);
   const scenePass = pass(scene, camera);
   const color = scenePass.getTextureNode('output');
-  post.outputNode = color.add(bloom(color, 0.8, 0.4, 0.6));
+  // Limiar um pouco abaixo do padrão para o rosa neon (veias, miolo) brilhar em repouso.
+  post.outputNode = color.add(bloom(color, 0.8, 0.4, 0.5));
 
   const resize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;

@@ -23,13 +23,13 @@ export const PARAM_RANGES = {
   petalLayers: [1, 3],
   petalLength: [0.22, 0.36],
   petalWidth: [0.1, 0.18],
-  petalCurl: [0, 1],
+  petalCurl: [0.35, 1],
   petalRuffle: [0, 1],
   petalTwist: [-0.4, 0.4],
   petalReflex: [0, 0.6],
   sideBuds: [0, 2],
   leafCount: [2, 5],
-  hue: [330, 355],
+  hue: [348, 355],
   stemHeight: [0.9, 1.3],
   stemBend: [0, 0.35],
 } as const satisfies Record<keyof FlowerParams, readonly [number, number]>;
@@ -67,12 +67,14 @@ export interface FlowerPalette {
 
 export function flowerPalette(p: FlowerParams): FlowerPalette {
   const c = (L: number, C: number, h: number) => clampRgb(oklchToLinearSrgb(L, C, h));
+  const h = (offset: number) => Math.min(PARAM_RANGES.hue[1], p.hue + offset);
+  // Alvos em sRGB: ponta #FF8FC0 e base #FF5FA8 (rosa chiclete); veias e miolo #FF2E9A (rosa neon).
   return {
-    petalBase: c(0.62, 0.2, p.hue - 5),
-    petalTip: c(0.86, 0.08, p.hue),
-    core: c(0.6, 0.22, p.hue - 10),
-    vein: c(0.72, 0.19, p.hue - 8),
-    leaf: c(0.38, 0.07, 175),
-    stem: c(0.34, 0.06, 165),
+    petalBase: c(0.72, 0.21, h(2)),
+    petalTip: c(0.8, 0.15, h(0)),
+    core: c(0.66, 0.25, h(4)),
+    vein: c(0.68, 0.25, h(4)),
+    leaf: c(0.52, 0.1, 165),
+    stem: c(0.46, 0.08, 160),
   };
 }

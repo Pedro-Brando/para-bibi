@@ -20,7 +20,7 @@ export function buildHead(head: Attachment, p: FlowerParams, rng: Rng): { petals
 
   for (let layer = 0; layer < p.petalLayers; layer++) {
     const layerScale = Math.pow(0.8, layer) * head.scale;
-    const openAngle = (78 - layer * 18) * DEG;
+    const openAngle = (62 - layer * 16) * DEG; // mais fechado: cálice de tulipa/peônia, não margarida
     const local = buildPatch(
       {
         length: p.petalLength * layerScale * range(rng, 0.93, 1.05),

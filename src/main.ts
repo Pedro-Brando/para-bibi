@@ -4,7 +4,7 @@ import { createClock } from './core/clock';
 import { createStage } from './scene/stage';
 import { buildFlower } from './scene/flower/build';
 import { toBufferGeometry } from './scene/flower/toGeometry';
-import { createFlowerMaterials, uFlash } from './scene/flower/materials';
+import { createFlowerMaterials, uFlash, SEED_FADE_END } from './scene/flower/materials';
 import { uGrowth } from './scene/flower/growthNode';
 import { flowerPalette } from './flower/params';
 import { NAME_SEED } from './seed/constants';
@@ -25,13 +25,14 @@ async function main() {
   const { params, meshes } = buildFlower(seed);
   const mats = createFlowerMaterials(flowerPalette(params));
 
+  const seedMesh = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), mats.seed);
   const group = new THREE.Group();
   group.add(
     new THREE.Mesh(toBufferGeometry(meshes.stem), mats.stem),
     new THREE.Mesh(toBufferGeometry(meshes.leaves), mats.leaf),
     new THREE.Mesh(toBufferGeometry(meshes.petals), mats.petal),
     new THREE.Mesh(toBufferGeometry(meshes.stamens), mats.stamen),
-    new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), mats.seed),
+    seedMesh,
   );
   for (const child of group.children) child.frustumCulled = false;
   stage.scene.add(group);
@@ -64,7 +65,9 @@ async function main() {
     const flicker = state.flashT > 0 ? state.flashT * (0.6 + 0.4 * Math.sin(state.flashT * 40)) : 0;
     uGrowth.value = state.growth;
     uFlash.value = flicker;
-    stage.flash.intensity = flicker * 30;
+    // Apagada, a esfera da semente seria um ponto preto espiando pela base aberta do caule.
+    seedMesh.visible = state.growth < SEED_FADE_END;
+    stage.flash.intensity = flicker * 15;
     stage.controls.update();
     stage.render();
     if (++frames === 3) window.__quarrymill!.ready = true;
