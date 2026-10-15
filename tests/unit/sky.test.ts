@@ -105,3 +105,21 @@ describe('stormFromCoverage', () => {
     }
   });
 });
+
+describe('eorzeaStars', () => {
+  it('is deterministic from FIRST_DATE_UNIX, catalog-shaped, with a real-sky magnitude spread', async () => {
+    const { eorzeaStars, EORZEA_STAR_COUNT } = await import('../../src/sky/eorzeaStars');
+    const a = eorzeaStars(), b = eorzeaStars();
+    expect(a).toEqual(b);
+    expect(a.length).toBe(EORZEA_STAR_COUNT * 4);
+    let bright = 0;
+    for (let i = 0; i < EORZEA_STAR_COUNT; i++) {
+      const mag = a[i * 4 + 2]!;
+      expect(mag).toBeGreaterThanOrEqual(-1);
+      expect(mag).toBeLessThanOrEqual(6);
+      if (mag < 2) bright++;
+    }
+    expect(bright).toBeGreaterThan(5);
+    expect(bright).toBeLessThan(EORZEA_STAR_COUNT * 0.05);
+  });
+});
