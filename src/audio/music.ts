@@ -14,7 +14,7 @@ export function createMusic(a: Audio, url: string) {
   return {
     /** Chamar dentro do gesto (clique de entrada). */
     start() {
-      void el.play().catch(() => {});
+      void el.play().catch((err) => console.warn('música não tocou:', err));
       const now = a.ctx.currentTime;
       gain.gain.setValueAtTime(0, now);
       gain.gain.linearRampToValueAtTime(LEVEL, now + FADE_IN);
