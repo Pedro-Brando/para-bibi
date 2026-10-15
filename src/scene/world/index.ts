@@ -25,6 +25,8 @@ export interface World {
   strike(): void;
   setFog(on: boolean): void;
   setSilhouettes(on: boolean): void;
+  /** Chão, riacho, vaga-lumes e chuva: fora quando a câmera só olha o céu. */
+  setGround(on: boolean): void;
   /** As duas camadas de silhueta mais perto (3,4 m e 6,5 m): olhando para cima, as copas cobrem a cabeça de Órion. */
   setNearSilhouettes(on: boolean): void;
   /** Céus de Eorzea e real; uCoverage também conduz a chuva e os relâmpagos. */
@@ -41,7 +43,10 @@ export async function createWorld(scene: THREE.Scene, opts: WorldOptions): Promi
   const sky = await createSky(opts.camera);
   const silhouettes = createSilhouettes(opts.camera, opts.target);
   const lightning = createLightning(sfc32(treeSeed(20_000)), opts.camera);
-  scene.add(sky.object, createGround(), createStream(), silhouettes.object, createFireflies(), createRain(), ...lightning.objects);
+  const ground = [createGround(), createStream(), createFireflies()];
+  const rain = createRain();
+  let groundOn = true;
+  scene.add(sky.object, ...ground, silhouettes.object, rain, ...lightning.objects);
 
   const schedule = lightningSchedule(sfc32(treeSeed(20_001)), SCHEDULE_SECONDS);
   let next = 0;
@@ -53,6 +58,7 @@ export async function createWorld(scene: THREE.Scene, opts: WorldOptions): Promi
       // A tempestade passou às 04:13: com o céu abrindo, a chuva some e os raios param juntos.
       const storm = stormFromCoverage(sky.uCoverage.value);
       uRain.value = storm.rain;
+      rain.visible = storm.rain > 0.001;
       clock += dt;
       if (clock > SCHEDULE_SECONDS) { clock -= SCHEDULE_SECONDS; next = 0; }
       while (next < schedule.length && schedule[next]! <= clock) { next++; if (storm.lightning) strike(); }
@@ -63,6 +69,11 @@ export async function createWorld(scene: THREE.Scene, opts: WorldOptions): Promi
     strike,
     setFog(on) { uFogOn.value = on ? 1 : 0; },
     setSilhouettes(on) { silhouettes.object.visible = on; },
+    setGround(on) {
+      if (on === groundOn) return;
+      groundOn = on;
+      for (const o of ground) o.visible = on;
+    },
     // Os dois primeiros filhos são as camadas 0 e 1 (a roda do moinho vem depois, com a camada 2).
     setNearSilhouettes(on) { for (const c of silhouettes.object.children.slice(0, 2)) c.visible = on; },
     sky,

@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import type { Node } from 'three/webgpu';
 import {
-  float, vec2, vec3, uv, length, smoothstep, exp, max, min, pow, instanceIndex, time, mx_noise_float, instancedBufferAttribute, dot, hash,
+  float, vec2, vec3, uv, length, smoothstep, exp, max, min, pow, instanceIndex, time, mx_noise_float, instancedBufferAttribute, dot, hash, varying,
 } from 'three/tsl';
 import { STAR_STRIDE } from '../../sky/catalog';
 import { raDecToVector } from '../../sky/frame';
@@ -55,7 +55,8 @@ export function createStarField(catalog: Float32Array, rotation: Mat3Node, weigh
   m.scaleNode = vec2(sizePx.mul(uPixelAngle).mul(above.mul(weight).greaterThan(0.002).select(1, 0)));
   const r = length(uv().sub(0.5)).mul(2);
   const core = smoothstep(1, 0, r);
-  m.colorNode = tint.mul(intensity);
+  // Brilho, cintilação e cor são por estrela: calculados no vértice, não em cada pixel do sprite.
+  m.colorNode = varying(tint.mul(intensity));
   m.opacityNode = core.mul(core);
   const sprite = new THREE.Sprite(m);
   sprite.count = count;

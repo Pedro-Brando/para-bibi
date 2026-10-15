@@ -52,15 +52,11 @@ export async function createSky(camera: THREE.PerspectiveCamera): Promise<Sky> {
   const moon = createMoon();
   const planets = (['mars', 'jupiter', 'saturn'] as const).map((n) => ({ name: n, ...createPlanet(n) }));
   const object = new THREE.Group();
-  object.add(
-    createBackdrop(),
-    createStarField(eorzeaStars(), uIdentity, float(1).sub(uWorldBlend)),
-    createStarField(stars, uEqToHor, uWorldBlend),
-    moon.mesh,
-    ...planets.map((p) => p.sprite),
-    createOrionLines(radec),
-    createClouds(),
-  );
+  const eorzeaField = createStarField(eorzeaStars(), uIdentity, float(1).sub(uWorldBlend));
+  const realField = createStarField(stars, uEqToHor, uWorldBlend);
+  const orionLines = createOrionLines(radec);
+  const clouds = createClouds();
+  object.add(createBackdrop(), eorzeaField, realField, moon.mesh, ...planets.map((p) => p.sprite), orionLines, clouds);
 
   let matrix: number[] = [];
   let lastCity = NaN;
@@ -83,6 +79,11 @@ export async function createSky(camera: THREE.PerspectiveCamera): Promise<Sky> {
     update() {
       if (uCityBlend.value !== lastCity) recompute();
       object.position.copy(camera.position);
+      // Não desenha o que está invisível: o céu que não aparece, nuvens com o céu aberto, Órion apagado.
+      eorzeaField.visible = uWorldBlend.value < 0.999;
+      realField.visible = uWorldBlend.value > 0.001;
+      clouds.visible = uCoverage.value > 0.001;
+      orionLines.visible = uOrion.value > 0.001;
       uPixelAngle.value = (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) / Math.max(1, window.innerHeight);
     },
     orionDirection() {
