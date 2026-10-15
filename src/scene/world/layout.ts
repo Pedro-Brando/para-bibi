@@ -10,8 +10,9 @@ export function treeSeed(i: number): Seed128 {
   return [(a ^ Math.imul(i + 1, 0x9e3779b1)) >>> 0, (b + Math.imul(i, 0x85ebca6b)) >>> 0, c, (d ^ i) >>> 0];
 }
 
-export const FIREFLY_MIN = 40;
-export const FIREFLY_MAX = 90;
+// Poucos de propósito: o presente precisa rodar liso num PC fraco.
+export const FIREFLY_MIN = 24;
+export const FIREFLY_MAX = 36;
 export const fireflyCount = (): number => int(sfc32(WORLD_SEED), FIREFLY_MIN, FIREFLY_MAX);
 
 export const WATER_Y = -0.1;
@@ -93,8 +94,7 @@ export const LAYERS: readonly LayerSpec[] = [
   { dist: 3.4, width: 14, height: 30, trees: 3, treeHeight: [15, 25], ridge: 0.25, clearCenter: 1.6, mill: false },
   { dist: 6.5, width: 22, height: 30, trees: 5, treeHeight: [15, 25], ridge: 0.45, clearCenter: 1.2, mill: false },
   { dist: 11, width: 34, height: 28, trees: 5, treeHeight: [15, 23], ridge: 0.6, clearCenter: 0, mill: true },
-  { dist: 18, width: 48, height: 22, trees: 11, treeHeight: [10, 17], ridge: 1.1, clearCenter: 0, mill: false },
-  { dist: 40, width: 84, height: 14, trees: 30, treeHeight: [4, 8], ridge: 2.4, clearCenter: 0, mill: false },
+  { dist: 18, width: 48, height: 22, trees: 16, treeHeight: [10, 17], ridge: 1.1, clearCenter: 0, mill: false },
 ];
 
 /** Na camada com o moinho: casa à esquerda, roda d'água ao lado dela (x local da camada, metros). */

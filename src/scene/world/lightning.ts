@@ -10,7 +10,7 @@ const BOLT_SECONDS = 0.3;
 const VIEW_ANGLE = -1.97;
 
 const MAX_VERTS = 1200;
-/** Entre a camada de silhueta mais longe (renderOrder 11) e a penúltima (12); ver silhouettes.ts. */
+/** As silhuetas agora são opacas e escrevem profundidade: o teste de profundidade põe a fita entre as copas. */
 const BOLT_RENDER_ORDER = 11.5;
 
 /**

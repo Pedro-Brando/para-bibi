@@ -4,7 +4,7 @@ import { cyrb128 } from '../seed/hash';
 import { sfc32 } from '../seed/prng';
 import { STAR_STRIDE } from './catalog';
 
-export const EORZEA_STAR_COUNT = 2600;
+export const EORZEA_STAR_COUNT = 1600;
 
 /** Mesmo formato de stars.bin ([raRad, decRad, mag, bv]); seed derivada de FIRST_DATE_UNIX. */
 export function eorzeaStars(): Float32Array {
