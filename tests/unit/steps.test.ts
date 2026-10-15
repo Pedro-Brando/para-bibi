@@ -19,10 +19,12 @@ describe('STEPS', () => {
     expect(poem.length).toBe(11);
     for (const s of poem) expect(stateAt(s.p).poemLine).toBeLessThan(POEM_SLOTS);
   });
-  it('lets the flower growth take longer and keeps other durations between 1.2 and 4 s', () => {
+  it('lets the flower growth and the name dissolve take longer and keeps other durations between 1.2 and 4 s', () => {
     for (let i = 1; i < STEPS.length; i++) {
       const d = stepDuration(i);
       if (STEPS[i]!.id === 'flower') expect(d).toBeGreaterThanOrEqual(5);
+      // O nome que se desfaz no número também pede mais tempo.
+      else if (STEPS[i]!.id === 'name-2') expect(d).toBeLessThanOrEqual(5);
       else { expect(d).toBeGreaterThanOrEqual(1.2); expect(d).toBeLessThanOrEqual(4); }
     }
   });
