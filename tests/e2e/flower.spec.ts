@@ -4,8 +4,9 @@ import { PNG } from 'pngjs';
 const BASE = 'http://localhost:5179/';
 
 // Contagens medidas em Chromium headless (SwiftShader, 1280x800) com a flor da seed do nome:
-// crescimento 1: 31604 pixels acesos; crescimento 0 (só a semente brilhando): 6453; preto puro: 0 em ambos.
-const GROWN_LIT_MIN = 12_000; // cerca de 40% da contagem medida
+// crescimento 1: 46272 pixels acesos; crescimento 0 (só a semente brilhando): 6516; preto puro: 0 em ambos.
+const GROWN_LIT_MIN = 18_000; // cerca de 40% da contagem medida
+const SEED_ONLY_LIT_MIN = 2_000; // cerca de 1/3 da contagem medida: um quadro escuro falha
 const SEED_ONLY_LIT_MAX = 10_000; // passa com o brilho da semente, falha se houver flor
 
 async function open(page: Page, query: string) {
@@ -45,6 +46,7 @@ for (const backend of ['webgl', 'auto'] as const) {
       await open(page, `?backend=${backend}&growth=0&freeze=1`);
       await page.waitForTimeout(500);
       const { lit, black } = await pixelStats(page);
+      expect(lit).toBeGreaterThan(SEED_ONLY_LIT_MIN);
       expect(lit).toBeLessThan(SEED_ONLY_LIT_MAX);
       expect(black).toBe(0);
     });
