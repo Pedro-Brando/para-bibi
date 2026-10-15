@@ -10,6 +10,8 @@ const BOLT_SECONDS = 0.3;
 const VIEW_ANGLE = -1.97;
 
 const MAX_VERTS = 1200;
+/** Entre a camada de silhueta mais longe (renderOrder 11) e a penúltima (12); ver silhouettes.ts. */
+const BOLT_RENDER_ORDER = 11.5;
 
 /**
  * Fita voltada para a câmera ao longo de cada caminho do raio, escrita num buffer pré-alocado (nada é
@@ -47,7 +49,7 @@ export function createLightning(rng: Rng, camera: THREE.Camera) {
   geo.setAttribute('position', posAttr);
   geo.setIndex(idxAttr);
   const mesh = new THREE.Mesh(geo, m);
-  mesh.renderOrder = 1;
+  mesh.renderOrder = BOLT_RENDER_ORDER;
   mesh.frustumCulled = false;
   mesh.visible = false;
   // Luz do raio para a floresta (a PointLight da fase 1 só alcança a flor).
@@ -58,12 +60,13 @@ export function createLightning(rng: Rng, camera: THREE.Camera) {
     objects: [mesh, light, light.target] as THREE.Object3D[],
     /** Dispara um raio e devolve a distância (unidades de cena) até a câmera. */
     strike(): number {
-      // A câmera é fixa: a maioria dos raios cai atrás das silhuetas, dentro do quadro; os outros só clareiam.
-      const ang = rng() < 0.75 ? VIEW_ANGLE + range(rng, -0.5, 0.5) : rng() * Math.PI * 2;
-      const dist = range(rng, 45, 160);
+      // A câmera é fixa: os raios caem dentro do quadro, entre a camada de longe e a penúltima, onde o céu
+      // aparece entre as copas; o renderOrder põe a fita na frente da camada de longe e atrás das outras.
+      const ang = VIEW_ANGLE + range(rng, -0.38, 0.38);
+      const dist = range(rng, 24, 36);
       const ex = Math.cos(ang) * dist, ez = Math.sin(ang) * dist;
       const end: Vec3 = [ex, -0.5, ez];
-      const start: Vec3 = [ex + range(rng, -15, 15), 30 + dist * 0.2, ez + range(rng, -15, 15)];
+      const start: Vec3 = [ex + range(rng, -6, 6), 22 + dist * 0.3, ez + range(rng, -6, 6)];
       geo.setDrawRange(0, writeRibbon(boltPoints(rng, start, end, 7), camera.position, pos, idx));
       posAttr.needsUpdate = true;
       idxAttr.needsUpdate = true;

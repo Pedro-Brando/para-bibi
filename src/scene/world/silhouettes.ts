@@ -235,7 +235,7 @@ export function createSilhouettes(camera: THREE.Camera, flowerTarget: THREE.Vect
     const center = forward.clone().multiplyScalar(spec.dist);
     mesh.position.set(center.x, LAYER_BOTTOM + spec.height / 2, center.z);
     lookY(mesh);
-    // Mais longe primeiro; o raio (renderOrder 1) fica atrás de todas.
+    // Mais longe primeiro (11 a 15); o raio usa 11,5 e fica entre a camada de longe e a penúltima.
     mesh.renderOrder = 10 + (LAYERS.length - i);
     group.add(mesh);
 
