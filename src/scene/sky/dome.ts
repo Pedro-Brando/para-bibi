@@ -1,8 +1,9 @@
 import * as THREE from 'three/webgpu';
 import {
-  color, float, mix, normalize, positionLocal, smoothstep, max, vec3, vec2, time, mx_fractal_noise_float, pow,
+  color, float, mix, normalize, positionLocal, smoothstep, max, vec2, time, pow,
 } from 'three/tsl';
 import { uFlash } from '../flower/materials';
+import { sampleNoise } from '../noiseTexture';
 import { uCoverage, uWorldBlend } from './uniforms';
 
 /** Fundo noturno: gradiente do horizonte ao zênite, Eorzea (01:01 ET) cruzando para o céu real. */
@@ -17,7 +18,8 @@ export function createBackdrop() {
   const real = mix(color('#121a33'), color('#03050c'), pow(h, 0.5));
   m.colorNode = mix(eorzea, real, uWorldBlend);
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(400, 48, 24), m);
-  mesh.renderOrder = -10;
+  // Opaco e sem escrever profundidade: desenhado depois das outras peças opacas, só onde nada as cobriu.
+  mesh.renderOrder = 50;
   mesh.frustumCulled = false;
   return mesh;
 }
@@ -33,8 +35,9 @@ export function createClouds() {
   const up = max(dir.y, 0);
   const proj = dir.xz.div(up.add(0.18));
   const wind = vec2(time.mul(0.018), time.mul(0.006));
-  const n = mx_fractal_noise_float(vec3(proj.mul(0.9).add(wind), time.mul(0.012)), 5, 2.1, 0.55).mul(0.5).add(0.5);
-  const detail = mx_fractal_noise_float(vec3(proj.mul(3.1).sub(wind.mul(1.6)), time.mul(0.03)), 3).mul(0.5).add(0.5);
+  // Ruído assado (src/scene/noiseTexture.ts): duas amostras por pixel em vez de 8 oitavas de fbm.
+  const n = sampleNoise(proj.mul(0.9).add(wind).div(4)).r;
+  const detail = sampleNoise(proj.mul(3.1).sub(wind.mul(1.6)).div(8)).g;
   const field = n.mul(0.8).add(detail.mul(0.2));
   // coverage 1: limiar abaixo de todo o ruído (céu fechado); 0: acima de tudo (céu limpo).
   const thr = mix(float(0.92), float(-0.05), uCoverage);
