@@ -11,5 +11,12 @@ astronomy-engine 2.1.19 (posições da Lua, dos planetas e rotação do céu)
   https://github.com/cosinekitty/astronomy
   Copyright (c) 2019-2023 Don Cross. Licença MIT.
 
-Fonte do poema
-  A definir no bloco C.
+Fonte do poema e dos textos (public/fonts/*.woff2)
+  Cormorant Garamond, regular e itálico, subconjuntos latin e latin-ext do Google Fonts
+  https://github.com/CatharsisFonts/Cormorant
+  Copyright (c) 2015 The Cormorant Project Authors. SIL Open Font License, versão 1.1.
+  https://openfontlicense.org
+
+Música (public/audio/neath-dark-waters.mp3)
+  "Neath Dark Waters" (tema de Amaurot), FINAL FANTASY XIV: Shadowbringers.
+  (c) SQUARE ENIX CO., LTD. Todos os direitos reservados. Uso pessoal, num presente privado.
