@@ -4,7 +4,8 @@
 export const ACTS = {
   seed: [0, 0.15],
   flower: [0.15, 0.35],
-  ascent: [0.35, 0.5],
+  name: [0.35, 0.39],
+  ascent: [0.39, 0.5],
   storm: [0.5, 0.6],
   opening: [0.6, 0.7],
   realSky: [0.7, 0.78],
@@ -14,6 +15,9 @@ export const ACTS = {
 
 /** Vagas do poema: 9 versos, a linha em branco, e o dístico final (que ocupa as duas últimas vagas). */
 export const POEM_SLOTS = 12;
+
+/** A flor do nome: 4 etapas de texto e mais uma vaga para tudo sumir antes da subida. */
+export const NAME_STAGES = 5;
 
 export interface SceneState {
   growth: number;
@@ -37,6 +41,10 @@ export interface SceneState {
   veil: number;
   /** Com o véu fechado a cena troca: silhuetas e flor saem e a câmera passa a olhar para o céu. */
   skyView: boolean;
+  /** Etapa da flor do nome, fracionária (0 a NAME_STAGES), para os textos e o pulso. */
+  nameStage: number;
+  /** Quanto a câmera aproxima e a cena escurece em volta da flor do nome, 0 a 1. */
+  nameFocus: number;
 }
 
 /** Instante da troca, no meio do trecho em que o véu está opaco (0,53 a 0,56). */
@@ -51,7 +59,7 @@ const ss = (a: number, b: number, x: number) => {
 const lin = (a: number, b: number, x: number) => clamp01((x - a) / (b - a));
 
 /** Marcos da câmera: linear por trechos (smoothstep pararia a câmera em cada marco). */
-const CAMERA_KEYS: [number, number][] = [[0, 0], [0.15, 0.08], [0.35, 0.3], [0.5, 0.9], [SKY_SWAP, 1]];
+const CAMERA_KEYS: [number, number][] = [[0, 0], [0.15, 0.08], [0.35, 0.3], [0.39, 0.3], [0.5, 0.9], [SKY_SWAP, 1]];
 
 function cameraAt(p: number): number {
   for (let i = 1; i < CAMERA_KEYS.length; i++) {
@@ -83,5 +91,7 @@ export function stateAt(progress: number): SceneState {
     phraseOpacity: ss(0.705, 0.725, p) * (1 - ss(0.76, 0.78, p)),
     veil: ss(0.48, 0.53, p) * (1 - ss(0.56, 0.6, p)),
     skyView: p >= SKY_SWAP,
+    nameStage: lin(ACTS.name[0], ACTS.name[1], p) * NAME_STAGES,
+    nameFocus: ss(0.35, 0.358, p) * (1 - ss(0.384, 0.395, p)),
   };
 }
