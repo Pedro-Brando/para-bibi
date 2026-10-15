@@ -9,7 +9,7 @@ import { createSky, type Sky } from '../sky';
 import { stormFromCoverage } from '../../sky/storm';
 import { lightningSchedule } from './bolt';
 import { treeSeed } from './layout';
-import { uRain, uFogOn, uBolt } from './uniforms';
+import { uRain, uFogOn, uBolt, uNearLayers, uMidLayer } from './uniforms';
 import { sfc32 } from '../../seed/prng';
 
 export interface WorldOptions {
@@ -27,6 +27,8 @@ export interface World {
   setSilhouettes(on: boolean): void;
   /** As duas camadas de silhueta mais perto (3,4 m e 6,5 m): olhando para cima, as copas cobrem a cabeça de Órion. */
   setNearSilhouettes(on: boolean): void;
+  /** O mesmo, gradual: 1 visíveis, 0 fora (a câmera subindo do bloco C); `mid` faz o mesmo com a camada do moinho. */
+  setNearLayers(opacity: number, mid?: number): void;
   /** Céus de Eorzea e real; uCoverage também conduz a chuva e os relâmpagos. */
   sky: Sky;
   uRain: typeof uRain;
@@ -65,6 +67,11 @@ export async function createWorld(scene: THREE.Scene, opts: WorldOptions): Promi
     setSilhouettes(on) { silhouettes.object.visible = on; },
     // Os dois primeiros filhos são as camadas 0 e 1 (a roda do moinho vem depois, com a camada 2).
     setNearSilhouettes(on) { for (const c of silhouettes.object.children.slice(0, 2)) c.visible = on; },
+    setNearLayers(opacity, mid = 1) {
+      uNearLayers.value = opacity;
+      uMidLayer.value = mid;
+      silhouettes.object.children.forEach((c, i) => { if (i < 4) c.visible = (i < 2 ? opacity : mid) > 0.002; });
+    },
     sky,
     uRain, uFogOn, uBolt,
   };

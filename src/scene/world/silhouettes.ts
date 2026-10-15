@@ -7,7 +7,7 @@ import { interpret } from '../../lsystem/turtle';
 import { sfc32, range, type Rng } from '../../seed/prng';
 import { LAYERS, LAYER_BOTTOM, MILL, layerTrees, treeSeed, type LayerSpec } from './layout';
 import { uFlash } from '../flower/materials';
-import { uFogOn } from './uniforms';
+import { uFogOn, uNearLayers, uMidLayer } from './uniforms';
 
 const MAX_TEX = 2048;
 
@@ -178,7 +178,7 @@ function wheelCanvas(): HTMLCanvasElement {
  * de distância grosseiro, então a borda fica limpa mesmo ampliada), cor da camada, faixa de névoa na base,
  * contorno claro voltado para o céu durante o relâmpago.
  */
-function silhouetteMaterial(tex: THREE.Texture, layerColor: string, depth01: number, heightM: number, mistM: number, mistAmount = 0.55) {
+function silhouetteMaterial(tex: THREE.Texture, layerColor: string, depth01: number, heightM: number, mistM: number, mistAmount = 0.55, fade: typeof uNearLayers | null = null) {
   const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false });
   m.fog = false;
   const t = uv();
@@ -197,7 +197,7 @@ function silhouetteMaterial(tex: THREE.Texture, layerColor: string, depth01: num
   const mist = smoothstep(-0.5, mistM, yM).oneMinus().mul(mistAmount).mul(uFogOn);
   const mistColor = mix(color(MIST_COLOR), color('#7d80b8'), uFlash.mul(0.6));
   m.colorNode = mix(mistColor, mix(silColor, mistColor, mist), sil);
-  m.opacityNode = max(sil, mist);
+  m.opacityNode = fade ? max(sil, mist).mul(fade) : max(sil, mist);
   return m;
 }
 
@@ -231,7 +231,7 @@ export function createSilhouettes(camera: THREE.Camera, flowerTarget: THREE.Vect
     const tex = canvasTexture(c.canvas);
     const depth01 = i / (LAYERS.length - 1);
     const mistM = 1.2 + i * 0.6;
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(spec.width, spec.height), silhouetteMaterial(tex, LAYER_COLORS[i]!, depth01, spec.height, mistM));
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(spec.width, spec.height), silhouetteMaterial(tex, LAYER_COLORS[i]!, depth01, spec.height, mistM, 0.55, i < 2 ? uNearLayers : spec.mill ? uMidLayer : null));
     const center = forward.clone().multiplyScalar(spec.dist);
     mesh.position.set(center.x, LAYER_BOTTOM + spec.height / 2, center.z);
     lookY(mesh);
@@ -242,7 +242,7 @@ export function createSilhouettes(camera: THREE.Camera, flowerTarget: THREE.Vect
     if (spec.mill) {
       const wtex = canvasTexture(wheelCanvas());
       const size = MILL.wheelRadius * 2 / 0.84 * 1.08;
-      wheel = new THREE.Mesh(new THREE.PlaneGeometry(size, size), silhouetteMaterial(wtex, LAYER_COLORS[i]!, depth01, size, 1, 0));
+      wheel = new THREE.Mesh(new THREE.PlaneGeometry(size, size), silhouetteMaterial(wtex, LAYER_COLORS[i]!, depth01, size, 1, 0, uMidLayer));
       const right = new THREE.Vector3(-forward.z, 0, forward.x);
       const p = center.clone().addScaledVector(right, MILL.wheelX).addScaledVector(forward, -0.05);
       wheel.position.set(p.x, MILL.wheelY, p.z);

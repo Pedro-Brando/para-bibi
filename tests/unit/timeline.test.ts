@@ -51,6 +51,12 @@ describe('stateAt', () => {
       prev = s;
     }
   });
+  it('fades the near silhouette layers, then the mill layer, as the camera rises to the sky', () => {
+    expect(stateAt(0.45)).toMatchObject({ nearLayers: 1, midLayer: 1 });
+    expect(stateAt(0.6).nearLayers).toBe(0);
+    expect(stateAt(0.6).midLayer).toBeGreaterThan(0);
+    expect(stateAt(0.66).midLayer).toBe(0);
+  });
   it('clamps p outside [0, 1]', () => {
     expect(stateAt(-3)).toEqual(stateAt(0));
     expect(stateAt(7)).toEqual(stateAt(1));

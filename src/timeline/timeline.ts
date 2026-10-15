@@ -35,6 +35,8 @@ export interface SceneState {
   phraseOpacity: number;
   /** As duas camadas de silhueta mais perto: saem enquanto a câmera sobe, porque as copas cobririam Órion. */
   nearLayers: number;
+  /** A camada do moinho, logo depois: lá de cima, olhando para Órion, a borda de cima do plano dela apareceria. */
+  midLayer: number;
 }
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -76,6 +78,7 @@ export function stateAt(progress: number): SceneState {
     labelOpacity: realLabel ? ss(0.68, 0.72, p) : 1 - ss(0.62, 0.66, p),
     realLabel,
     phraseOpacity: ss(0.705, 0.725, p) * (1 - ss(0.76, 0.78, p)),
-    nearLayers: 1 - ss(0.42, 0.55, p),
+    nearLayers: 1 - ss(0.5, 0.6, p),
+    midLayer: 1 - ss(0.56, 0.65, p),
   };
 }
