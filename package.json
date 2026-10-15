@@ -12,6 +12,7 @@
     "gallery": "playwright test --grep @gallery"
   },
   "dependencies": {
+    "astronomy-engine": "2.1.19",
     "three": "0.186.1"
   },
   "devDependencies": {
