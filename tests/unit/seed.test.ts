@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { cyrb128 } from '../../src/seed/hash';
 import { sfc32, range, int, weighted, sampleDistinct } from '../../src/seed/prng';
 import { NAME_SEED } from '../../src/seed/constants';
@@ -12,6 +14,11 @@ describe('cyrb128', () => {
     expect(cyrb128('  abc ')).toEqual(cyrb128('abc'));
     // NFD (e + U+0301 combining acute) must hash like NFC (U+00E9).
     expect(cyrb128('Jose\u0301')).toEqual(cyrb128('Jos\u00e9'));
+  });
+  it('scripts/seed.mjs (the standalone copy that generated NAME_SEED) has not drifted from cyrb128', () => {
+    const script = fileURLToPath(new URL('../../scripts/seed.mjs', import.meta.url));
+    const out = execFileSync(process.execPath, [script, 'abc'], { encoding: 'utf8' });
+    expect(JSON.parse(out)).toEqual(cyrb128('abc'));
   });
 });
 
