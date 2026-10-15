@@ -1,0 +1,31 @@
+{
+  "name": "quarrymill",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5179 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5179 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test --grep-invert @gallery",
+    "gallery": "playwright test --grep @gallery"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "20.19.43",
+    "@types/pngjs": "6.0.5",
+    "@types/three": "0.186.0",
+    "lil-gui": "0.21.0",
+    "pngjs": "7.0.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.1",
+    "vitest": "4.1.11"
+  },
+  "overrides": {
+    "vitest": "4.1.11"
+  }
+}
